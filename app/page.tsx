@@ -1,13 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 type Language = 'tr' | 'en';
+type TabType = 'main' | 'activities' | 'realestate' | 'shopping' | 'travel' | 'jobs';
 
 interface PlayerStats {
   money: number;
@@ -59,7 +55,7 @@ const shopItems = [
 export default function GameHome() {
   const [lang, setLang] = useState<Language>('tr');
   const [isStarted, setIsStarted] = useState(false);
-  const [activeTab, setActiveTab] = useState<'main' | 'activities' | 'realestate' | 'shopping' | 'travel' | 'jobs'>('main');
+  const [activeTab, setActiveTab] = useState<TabType>('main');
   const [logs, setLogs] = useState<string[]>([]);
   
   const [player, setPlayer] = useState<PlayerStats>({
@@ -82,7 +78,7 @@ export default function GameHome() {
   const clamp = (val: number, min = 0, max = 100) => Math.max(min, Math.min(max, val));
 
   const doActivity = (activity: string) => {
-    let p = { ...player };
+    const p = { ...player };
     let msg = '';
     
     if (p.energy < 15) {
@@ -137,6 +133,8 @@ export default function GameHome() {
           msg = lang === 'tr' ? 'Hastane masrafı için paran yetersiz!' : 'Not enough money for hospital bills!';
         }
         break;
+      default:
+        break;
     }
     setPlayer(p);
     addLog(msg);
@@ -158,7 +156,7 @@ export default function GameHome() {
 
   const buyItem = (item: typeof shopItems[0]) => {
     if (player.money >= item.cost) {
-      let p = { ...player, money: player.money - item.cost };
+      const p = { ...player, money: player.money - item.cost };
       if (item.effect.happiness) p.happiness = clamp(p.happiness + item.effect.happiness);
       if (item.effect.energy) p.energy = clamp(p.energy + item.effect.energy);
       if (item.effect.gpa) p.gpa = Math.min(4.0, p.gpa + item.effect.gpa);
@@ -185,7 +183,7 @@ export default function GameHome() {
   };
 
   const nextMonth = () => {
-    let p = { ...player };
+    const p = { ...player };
     p.money += p.job.salary;
     if (p.housing.type === 'rent') {
       p.money -= p.housing.rent;
@@ -388,7 +386,7 @@ export default function GameHome() {
             { id: 'jobs', icon: '💼', tr: 'KARİYER', en: 'JOBS' },
             { id: 'travel', icon: '✈️', tr: 'GEZİ', en: 'MAP' }
           ].map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${activeTab === tab.id ? 'text-rose-400 bg-neutral-950 border border-neutral-800' : 'hover:bg-neutral-800'}`}>
+            <button key={tab.id} onClick={() => setActiveTab(tab.id as TabType)} className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${activeTab === tab.id ? 'text-rose-400 bg-neutral-950 border border-neutral-800' : 'hover:bg-neutral-800'}`}>
               <span className="text-xl mb-1 filter drop-shadow-md">{tab.icon}</span>
               {lang === 'tr' ? tab.tr : tab.en}
             </button>
