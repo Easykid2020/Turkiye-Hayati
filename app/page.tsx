@@ -3,7 +3,45 @@
 import { useState } from 'react';
 
 type Language = 'tr' | 'en';
-type TabType = 'main' | 'activities' | 'realestate' | 'shopping' | 'travel' | 'jobs';
+type TabType = 'main' | 'activities' | 'realestate' | 'shopping' | 'jobs' | 'travel';
+
+interface LocalizedText {
+  tr: string;
+  en: string;
+}
+
+interface Job {
+  tr: string;
+  en: string;
+  salary: number;
+}
+
+interface Housing {
+  id: string;
+  type: 'rent' | 'owned';
+  name: LocalizedText;
+  price: number;
+}
+
+interface ShopItemEffect {
+  happiness?: number;
+  energy?: number;
+  gpa?: number;
+}
+
+interface ShopItem {
+  id: string;
+  category: 'clothes' | 'tech';
+  name: LocalizedText;
+  cost: number;
+  effect: ShopItemEffect;
+}
+
+interface LocationData {
+  id: string;
+  name: LocalizedText;
+  cost: number;
+}
 
 interface PlayerStats {
   money: number;
@@ -13,19 +51,19 @@ interface PlayerStats {
   gpa: number;
   faith: number;
   location: string;
-  job: { tr: string; en: string; salary: number };
+  job: Job;
   housing: { tr: string; en: string; rent: number; type: 'rent' | 'owned' };
   inventory: string[];
 }
 
-const locations = [
+const locations: LocationData[] = [
   { id: 'Ankara', name: { tr: 'Ankara', en: 'Ankara' }, cost: 300 },
   { id: 'Istanbul', name: { tr: 'İstanbul', en: 'Istanbul' }, cost: 600 },
   { id: 'Izmir', name: { tr: 'İzmir', en: 'Izmir' }, cost: 500 },
   { id: 'Trabzon', name: { tr: 'Trabzon', en: 'Trabzon' }, cost: 400 }
 ];
 
-const jobsList = [
+const jobsList: Job[] = [
   { tr: 'Öğrenci (İşsiz)', en: 'Student (Unemployed)', salary: 0 },
   { tr: 'Kafe Barista', en: 'Cafe Barista', salary: 11500 },
   { tr: 'Mağaza Görevlisi', en: 'Retail Worker', salary: 12000 },
@@ -35,7 +73,7 @@ const jobsList = [
   { tr: 'Özel Ders Öğretmeni', en: 'Private Tutor', salary: 18000 }
 ];
 
-const realEstateList = [
+const realEstateList: Housing[] = [
   { id: 'kyk', type: 'rent', name: { tr: 'KYK Yurdu', en: 'KYK Dorm' }, price: 850 },
   { id: 'shared', type: 'rent', name: { tr: 'Paylaşımlı Öğrenci Evi', en: 'Shared Flat' }, price: 4500 },
   { id: 'studio', type: 'rent', name: { tr: '1+0 Stüdyo Daire', en: 'Studio Apartment' }, price: 12000 },
@@ -44,12 +82,21 @@ const realEstateList = [
   { id: 'villa', type: 'owned', name: { tr: 'Sahil Villası', en: 'Coastal Villa' }, price: 12000000 }
 ];
 
-const shopItems = [
+const shopItems: ShopItem[] = [
   { id: 'tshirt', category: 'clothes', name: { tr: 'Marka Tişört', en: 'Branded T-Shirt' }, cost: 800, effect: { happiness: 5 } },
   { id: 'sneakers', category: 'clothes', name: { tr: 'Spor Ayakkabı', en: 'Sneakers' }, cost: 3500, effect: { happiness: 10, energy: 5 } },
   { id: 'suit', category: 'clothes', name: { tr: 'Takım Elbise', en: 'Business Suit' }, cost: 6000, effect: { happiness: 15 } },
   { id: 'phone', category: 'tech', name: { tr: 'Akıllı Telefon', en: 'Smartphone' }, cost: 45000, effect: { happiness: 25 } },
   { id: 'laptop', category: 'tech', name: { tr: 'Oyun Bilgisayarı', en: 'Gaming Laptop' }, cost: 65000, effect: { happiness: 30, gpa: 0.2 } }
+];
+
+const navTabs: { id: TabType; icon: string; tr: string; en: string }[] = [
+  { id: 'main', icon: '🎮', tr: 'ANA', en: 'MAIN' },
+  { id: 'activities', icon: '🏃', tr: 'AKSİYON', en: 'ACT' },
+  { id: 'realestate', icon: '🏠', tr: 'EMLAK', en: 'HOME' },
+  { id: 'shopping', icon: '🛒', tr: 'MARKET', en: 'SHOP' },
+  { id: 'jobs', icon: '💼', tr: 'KARİYER', en: 'JOBS' },
+  { id: 'travel', icon: '✈️', tr: 'GEZİ', en: 'MAP' }
 ];
 
 export default function GameHome() {
@@ -101,12 +148,12 @@ export default function GameHome() {
         break;
       case 'bus':
         p.energy -= 15;
-        const events = [
+        const busEvents = [
           { tr: 'Otobüs çok kalabalıktı, ayakta kaldın.', en: 'Bus was packed, you had to stand.' },
           { tr: 'Otobüste yer buldun ve rahat bir yolculuk yaptın.', en: 'Found a seat and had a relaxing ride.' },
           { tr: 'Trafik kilitlendi, saatlerce yolda kaldın!', en: 'Traffic jam, stuck on the road for hours!' }
         ];
-        msg = events[Math.floor(Math.random() * events.length)][lang];
+        msg = busEvents[Math.floor(Math.random() * busEvents.length)][lang];
         break;
       case 'work':
         if (p.job.salary === 0) {
@@ -140,7 +187,7 @@ export default function GameHome() {
     addLog(msg);
   };
 
-  const buyProperty = (prop: typeof realEstateList[0]) => {
+  const buyProperty = (prop: Housing) => {
     if (prop.type === 'owned') {
       if (player.money >= prop.price) {
         setPlayer({ ...player, money: player.money - prop.price, housing: { tr: prop.name.tr, en: prop.name.en, rent: 0, type: 'owned' } });
@@ -154,7 +201,7 @@ export default function GameHome() {
     }
   };
 
-  const buyItem = (item: typeof shopItems[0]) => {
+  const buyItem = (item: ShopItem) => {
     if (player.money >= item.cost) {
       const p = { ...player, money: player.money - item.cost };
       if (item.effect.happiness) p.happiness = clamp(p.happiness + item.effect.happiness);
@@ -168,12 +215,12 @@ export default function GameHome() {
     }
   };
 
-  const changeJob = (job: typeof jobsList[0]) => {
+  const changeJob = (job: Job) => {
     setPlayer({ ...player, job });
     addLog(lang === 'tr' ? `Yeni işe başladın: ${job.tr}` : `Started new job: ${job.en}`);
   };
 
-  const travel = (loc: typeof locations[0]) => {
+  const travel = (loc: LocationData) => {
     if (player.money >= loc.cost) {
       setPlayer({ ...player, money: player.money - loc.cost, location: loc.id });
       addLog(lang === 'tr' ? `${loc.name.tr} şehrine seyahat ettin.` : `Traveled to ${loc.name.en}.`);
@@ -226,7 +273,7 @@ export default function GameHome() {
           <h1 className="text-xl font-black text-rose-500 tracking-wider drop-shadow-md">TÜRKİYE HAYATI</h1>
           <div className="flex gap-2">
             <span className="bg-neutral-800 px-3 py-1 rounded font-bold border border-neutral-700 text-sky-400 text-xs flex items-center">
-              📍 {locations.find(l=>l.id===player.location)?.name[lang]}
+              📍 {locations.find(l => l.id === player.location)?.name[lang]}
             </span>
           </div>
         </div>
@@ -284,7 +331,7 @@ export default function GameHome() {
               ) : (
                 logs.map((log, i) => (
                   <div key={i} className={`p-3 rounded border text-sm ${i === 0 ? 'bg-neutral-900 border-rose-500/50 text-white' : 'border-neutral-800 text-neutral-500'}`}>
-                    > {log}
+                    {"> "} {log}
                   </div>
                 ))
               )}
@@ -378,15 +425,8 @@ export default function GameHome() {
 
       <nav className="fixed bottom-0 w-full bg-neutral-900 border-t-2 border-neutral-800 p-2 pb-6 px-2 z-20 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
         <div className="max-w-md mx-auto grid grid-cols-6 gap-1 text-[9px] font-black text-center text-neutral-500 uppercase tracking-tighter">
-          {[
-            { id: 'main', icon: '🎮', tr: 'ANA', en: 'MAIN' },
-            { id: 'activities', icon: '🏃', tr: 'AKSİYON', en: 'ACT' },
-            { id: 'realestate', icon: '🏠', tr: 'EMLAK', en: 'HOME' },
-            { id: 'shopping', icon: '🛒', tr: 'MARKET', en: 'SHOP' },
-            { id: 'jobs', icon: '💼', tr: 'KARİYER', en: 'JOBS' },
-            { id: 'travel', icon: '✈️', tr: 'GEZİ', en: 'MAP' }
-          ].map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id as TabType)} className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${activeTab === tab.id ? 'text-rose-400 bg-neutral-950 border border-neutral-800' : 'hover:bg-neutral-800'}`}>
+          {navTabs.map(tab => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${activeTab === tab.id ? 'text-rose-400 bg-neutral-950 border border-neutral-800' : 'hover:bg-neutral-800'}`}>
               <span className="text-xl mb-1 filter drop-shadow-md">{tab.icon}</span>
               {lang === 'tr' ? tab.tr : tab.en}
             </button>
