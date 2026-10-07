@@ -16,6 +16,7 @@ interface PlayerStats {
   health: number;
   happiness: number;
   energy: number;
+  gpa: number;
   job: { tr: string; en: string; salary: number };
   housing: { tr: string; en: string; rent: number };
   status: { tr: string; en: string };
@@ -35,6 +36,27 @@ interface GameEvent {
 }
 
 const gameEvents: GameEvent[] = [
+  {
+    id: 'midterm_season',
+    category: 'university',
+    title: { tr: 'Vize Haftası Kabusu 📚', en: 'Midterm Exam Nightmare 📚' %>',
+    description: {
+      tr: 'Amfilerde sabahlama dönemi geldi! Bilgisayar Mühendisliği vizeleri kapıda ve konular birikti.',
+      en: 'All-nighter season in the lecture halls is here! Engineering midterms are approaching and coursework has piled up.'
+    },
+    choices: [
+      {
+        text: { tr: 'Kütüphanede sabaha kadar çalış (GPA artar, enerji düşer)', en: 'Study all night at the library (GPA+, Energy-)' },
+        effect: (s) => ({ ...s, gpa: Math.min(4.0, Number((s.gpa + 0.2).toFixed(2))), energy: Math.max(0, s.energy - 30), happiness: Math.max(0, s.happiness - 10) }),
+        response: { tr: 'Gözlerin morardı ama vizeden yüksek aldın! GPA yükseldi.', en: 'You look exhausted, but you aced the exam! GPA increased.' }
+      },
+      {
+        text: { tr: 'Risk al ve arkadaşlarınla kafeye takıl', en: 'Take a risk and hang out with friends' },
+        effect: (s) => ({ ...s, gpa: Math.max(1.0, Number((s.gpa - 0.3).toFixed(2))), happiness: Math.min(100, s.happiness + 20) }),
+        response: { tr: 'Keyfin yerinde ama hocanın soruları altında ezildin. GPA düştü!', en: 'You had fun, but struggled on the exam. GPA dropped!' }
+      }
+    ]
+  },
   {
     id: 'kyk_burs_day',
     category: 'economy',
@@ -71,48 +93,6 @@ const gameEvents: GameEvent[] = [
         response: { tr: `Maaş alındı (+${s.job.salary.toLocaleString()} ₺) ve kira ödendi (-${s.housing.rent.toLocaleString()} ₺).`, en: `Salary collected (+${s.job.salary.toLocaleString()} ₺) and rent paid (-${s.housing.rent.toLocaleString()} ₺).` }
       }
     ]
-  },
-  {
-    id: 'landlord_negotiation',
-    category: 'housing',
-    title: { tr: 'Ev Sahibinden Zam Haberi 📈', en: 'Landlord Rent Hike Notice 📈' },
-    description: {
-      tr: 'Ev sahibi piyasa koşullarını bahane ederek kiraya %50 zam yapmak istediğini söylüyor!',
-      en: 'The landlord calls, demanding a 50% rent hike citing market conditions!'
-    },
-    choices: [
-      {
-        text: { tr: 'Zammı kabul et ve bütçeyi kıs', en: 'Accept the hike and tighten your budget' },
-        effect: (s) => ({ ...s, housing: { ...s.housing, rent: Math.round(s.housing.rent * 1.5) }, happiness: Math.max(0, s.happiness - 15) }),
-        response: { tr: 'Kira masrafın önemli ölçüde arttı!', en: 'Your monthly rent expenses increased significantly!' }
-      },
-      {
-        text: { tr: 'KYK yurduna veya daha küçük bir odaya taşın', en: 'Move to a KYK dorm or smaller room' },
-        effect: (s) => ({ ...s, housing: { tr: 'KYK Yurdu', en: 'KYK Dormitory', rent: 800 }, happiness: Math.max(0, s.happiness - 10) }),
-        response: { tr: 'Yurda yerleştin, kira masrafın azaldı ama odada 4 kişisiniz.', en: 'Moved into the dorm, rent dropped but you share with 4 people.' }
-      }
-    ]
-  },
-  {
-    id: 'derby_match_crisis',
-    category: 'street',
-    title: { tr: 'Derbi Heyecanı ⚽', en: 'Derby Match Fever ⚽' },
-    description: {
-      tr: 'Büyük derbi gecesi geldi! Maçı stadyumda izlemek mi, yoksa mahalle kahvesinde izlemek mi?',
-      en: 'The big derby night has arrived! Watch it at the stadium or at a local spot with friends?'
-    },
-    choices: [
-      {
-        text: { tr: 'Bilet al ve stadyum atmosferini yaşa (-1000 TL)', en: 'Buy stadium tickets (-1000 TL)' },
-        effect: (s) => ({ ...s, money: s.money - 1000, happiness: Math.min(100, s.happiness + 40) }),
-        response: { tr: 'Stadyum sesinden kulakların çınladı, unutulmaz gece!', en: 'Unforgettable night at the stadium!' }
-      },
-      {
-        text: { tr: 'Mahallede çay eşliğinde izle (-50 TL)', en: 'Watch locally with tea (-50 TL)' },
-        effect: (s) => ({ ...s, money: s.money - 50, happiness: Math.min(100, s.happiness + 15) }),
-        response: { tr: 'Sıcak ortam ve çay ile harika bir maç keyfi.', en: 'Great match experience with warm tea.' }
-      }
-    ]
   }
 ];
 
@@ -130,6 +110,7 @@ export default function GameHome() {
     health: 90,
     happiness: 80,
     energy: 85,
+    gpa: 3.10,
     job: {
       tr: 'Yazılım Stajyeri',
       en: 'Software Intern',
@@ -141,8 +122,8 @@ export default function GameHome() {
       rent: 3500
     },
     status: {
-      tr: 'Üniversite Öğrencisi / Stajyer',
-      en: 'University Student / Intern'
+      tr: 'Bilgisayar Mühendisliği Öğrencisi',
+      en: 'Computer Engineering Student'
     },
     location: {
       tr: 'Türkiye',
@@ -192,7 +173,7 @@ export default function GameHome() {
       <header className="w-full max-w-2xl flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
         <div>
           <h1 className="text-2xl font-black tracking-wider text-red-500">
-            TÜRKİYE HAYATI <span className="text-xs bg-red-950 text-red-400 px-2 py-0.5 rounded border border-red-800">v2.4</span>
+            TÜRKİYE HAYATI <span className="text-xs bg-red-950 text-red-400 px-2 py-0.5 rounded border border-red-800">v2.5</span>
           </h1>
           <p className="text-xs text-slate-400">
             {lang === 'tr' ? 'Kültür, Sokaklar ve Yaşam Simülasyonu' : 'Culture, Streets & Life Simulation'}
@@ -287,8 +268,8 @@ export default function GameHome() {
           </p>
         </div>
         <div>
-          <p className="text-xs text-slate-400">{lang === 'tr' ? 'Konut / Kira' : 'Housing / Rent'}</p>
-          <p className="font-bold text-sm text-sky-300 truncate">{player.housing[lang]} (-{player.housing.rent.toLocaleString()}₺)</p>
+          <p className="text-xs text-slate-400">{lang === 'tr' ? 'Not Ortalaması (GPA)' : 'Academic GPA'}</p>
+          <p className="font-bold text-lg text-purple-400">🎓 {player.gpa.toFixed(2)} / 4.0</p>
         </div>
         <div>
           <p className="text-xs text-slate-400">{lang === 'tr' ? 'Sağlık / Mutluluk' : 'Health / Happy'}</p>
