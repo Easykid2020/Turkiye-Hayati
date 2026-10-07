@@ -22,7 +22,7 @@ interface PlayerStats {
 
 interface GameEvent {
   id: string;
-  category: 'street' | 'university' | 'economy' | 'travel';
+  category: 'street' | 'university' | 'economy' | 'travel' | 'work';
   title: { tr: string; en: string };
   description: { tr: string; en: string };
   choices: {
@@ -32,7 +32,7 @@ interface GameEvent {
   }[];
 }
 
-const universalEvents: GameEvent[] = [
+const gameEvents: GameEvent[] = [
   {
     id: 'kyk_burs_day',
     category: 'economy',
@@ -55,44 +55,65 @@ const universalEvents: GameEvent[] = [
     ]
   },
   {
-    id: 'historical_trip_ephesus',
-    category: 'travel',
-    title: { tr: 'Efes Antik Kenti Gezisi', en: 'Trip to Ancient Ephesus' },
+    id: 'part_time_café',
+    category: 'work',
+    title: { tr: 'Kafe veya Barista Çalışması', en: 'Cafe Shift & Part-time Hustle' },
     description: {
-      tr: 'Hafta sonu arkadaş grubunla İzmir Selçuk\'taki Efes Antik Kenti\'ne ya da Bodrum sahiline kaçamak yapma planı yapıyorsunuz.',
-      en: 'You and your friends are planning a weekend getaway to the ancient city of Ephesus in Izmir or the shores of Bodrum.'
+      tr: 'Hafta sonu harçlığını çıkarmak için üçüncü nesil bir kahvecuda barista olarak çalışarak ek gelir elde etme şansın var.',
+      en: 'You have the opportunity to make extra cash working as a barista at a third-wave coffee shop over the weekend.'
     },
     choices: [
       {
-        text: { tr: 'Kültür turu yap, Efes Harabeleri\'ni gez', en: 'Go cultural, explore the Ephesus ruins' },
-        effect: (s) => ({ ...s, money: s.money - 750, happiness: Math.min(100, s.happiness + 30), energy: Math.max(0, s.energy - 10) }),
-        response: { tr: 'Tarihe tanıklık ettin, ruhun dinlendi ama bütçe azaldı.', en: 'Witnessed history, your soul refreshed but your budget dropped.' }
+        text: { tr: 'Vardiyayı kabul et (+750 TL kazan, enerji harca)', en: 'Accept shift (Earn +750 TL, lose energy)' },
+        effect: (s) => ({ ...s, money: s.money + 750, energy: Math.max(0, s.energy - 25), happiness: Math.max(0, s.happiness - 5) }),
+        response: { tr: 'Ayaklarına kara sular indi ama cüzdan neşelendi!', en: 'Your feet hurt, but your wallet is happier!' }
       },
       {
-        text: { tr: 'Sahile in, Akdeniz güneşinin tadını çıkar', en: 'Head to the coast, enjoy the Mediterranean sun' },
-        effect: (s) => ({ ...s, money: s.money - 1200, health: Math.min(100, s.health + 10), happiness: Math.min(100, s.happiness + 35) }),
-        response: { tr: 'Sahil havası tüm yılın yorgunluğunu aldı götürdü!', en: 'Coastal air washed away the fatigue of the whole year!' }
+        text: { tr: 'Dinlenmeyi seç, evde otur', en: 'Choose to rest at home' },
+        effect: (s) => ({ ...s, energy: Math.min(100, s.energy + 15), happiness: Math.min(100, s.happiness + 5) }),
+        response: { tr: 'Dinlendin ama bütçeye katkı olmadı.', en: 'You rested, but no cash added.' }
       }
     ]
   },
   {
-    id: 'istanbul_vapur_cay',
-    category: 'street',
-    title: { tr: 'Vapurda Çay ve Simit Keyfi', en: 'Tea and Simit on the Ferry' },
+    id: 'historical_trip_ephesus',
+    category: 'travel',
+    title: { tr: 'Efes Antik Kenti ve Sahil Kaçamağı', en: 'Ephesus Ruins & Coastal Getaway' },
     description: {
-      tr: 'Boğaz hattında vapurla seyrederken martılara simit atmak ve demli çay yudumlamak gibisi yok.',
-      en: 'Cruising across the Bosphorus on a ferry while feeding seagulls and sipping brewed tea is unmatched.'
+      tr: 'Derslerden bunalıp İzmir Selçuk\'taki Efes Harabeleri\'ne ya da Bodrum/Antalya sahillerine kısa bir hafta sonu turu planlıyorsun.',
+      en: 'Stressed from classes, you plan a quick weekend trip to the Ephesus Ruins in Izmir or the Mediterranean coast.'
     },
     choices: [
       {
-        text: { tr: 'Çay ve simit al, manzaranın tadını çıkar (40 TL)', en: 'Get tea and simit, enjoy the view (40 TL)' },
-        effect: (s) => ({ ...s, money: s.money - 40, happiness: Math.min(100, s.happiness + 15), energy: Math.min(100, s.energy + 10) }),
-        response: { tr: 'Klasik Türkiye huzuru! Keyfin yerine geldi.', en: 'Classic Turkish peace! Your mood is lifted.' }
+        text: { tr: 'Kültür turu yap, Efes\'i keşfet', en: 'Go cultural, explore Ephesus' },
+        effect: (s) => ({ ...s, money: s.money - 750, happiness: Math.min(100, s.happiness + 30), energy: Math.max(0, s.energy - 10) }),
+        response: { tr: 'Tarihe tanıklık ettin, ruhun dinlendi!', en: 'Witnessed history, your soul refreshed!' }
       },
       {
-        text: { tr: 'Sadece müziği dinle ve masraf yapma', en: 'Just listen to music and save money' },
-        effect: (s) => ({ ...s, happiness: Math.min(100, s.happiness + 5) }),
-        response: { tr: 'Tasarruf yaptın ama çayın eksikliğini hissettin.', en: 'Saved money, but missed out on the tea.' }
+        text: { tr: 'Sahile in, Akdeniz güneşinin tadını çıkar', en: 'Head to the coast, enjoy the sun' },
+        effect: (s) => ({ ...s, money: s.money - 1200, health: Math.min(100, s.health + 10), happiness: Math.min(100, s.happiness + 35) }),
+        response: { tr: 'Sahil havası tüm yılın stresini aldı!', en: 'Coastal air washed away all stress!' }
+      }
+    ]
+  },
+  {
+    id: 'derby_match_crisis',
+    category: 'street',
+    title: { tr: 'Derbi Heyecanı ⚽', en: 'Derby Match Fever ⚽' },
+    description: {
+      tr: 'Büyük derbi gecesi geldi! Maçı stadyumda izlemek mi, yoksa mahalle kahvesinde/esnaf lokantasında izlemek mi?',
+      en: 'The big derby night has arrived! Watch it at the stadium or at a local spot with friends?'
+    },
+    choices: [
+      {
+        text: { tr: 'Bilet al ve stadyum atmosferini yaşa (-1000 TL)', en: 'Buy stadium tickets (-1000 TL)' },
+        effect: (s) => ({ ...s, money: s.money - 1000, happiness: Math.min(100, s.happiness + 40) }),
+        response: { tr: 'Stadyum sesinden kulakların çınladı, unutulmaz gece!', en: 'Unforgettable night at the stadium!' }
+      },
+      {
+        text: { tr: 'Mahallede çay eşliğinde izle (-50 TL)', en: 'Watch locally with tea (-50 TL)' },
+        effect: (s) => ({ ...s, money: s.money - 50, happiness: Math.min(100, s.happiness + 15) }),
+        response: { tr: 'Sıcak ortam ve çay ile harika bir maç keyfi.', en: 'Great match experience with warm tea.' }
       }
     ]
   }
@@ -111,8 +132,8 @@ export default function GameHome() {
     happiness: 80,
     energy: 85,
     status: {
-      tr: 'Üniversite Öğrencisi / Gezgin',
-      en: 'University Student / Traveler'
+      tr: 'Üniversite Öğrencisi / Genç Yetişkin',
+      en: 'University Student / Young Adult'
     },
     location: {
       tr: 'Türkiye',
@@ -120,7 +141,7 @@ export default function GameHome() {
     }
   });
 
-  const currentEvent = universalEvents[eventIndex];
+  const currentEvent = gameEvents[eventIndex];
 
   const handleChoice = (choice: typeof currentEvent.choices[0]) => {
     const updated = choice.effect(player);
@@ -130,7 +151,7 @@ export default function GameHome() {
 
   const nextEvent = () => {
     setFeedback(null);
-    setEventIndex((prev) => (prev + 1) % universalEvents.length);
+    setEventIndex((prev) => (prev + 1) % gameEvents.length);
   };
 
   return (
@@ -139,7 +160,7 @@ export default function GameHome() {
       <header className="w-full max-w-2xl flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
         <div>
           <h1 className="text-2xl font-black tracking-wider text-red-500">
-            TÜRKİYE HAYATI <span className="text-xs bg-red-950 text-red-400 px-2 py-0.5 rounded border border-red-800">v2.1</span>
+            TÜRKİYE HAYATI <span className="text-xs bg-red-950 text-red-400 px-2 py-0.5 rounded border border-red-800">v2.2</span>
           </h1>
           <p className="text-xs text-slate-400">
             {lang === 'tr' ? 'Kültür, Sokaklar ve Yaşam Simülasyonu' : 'Culture, Streets & Life Simulation'}
@@ -157,7 +178,9 @@ export default function GameHome() {
       <section className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-xl p-4 mb-6 shadow-xl grid grid-cols-2 md:grid-cols-4 gap-4">
         <div>
           <p className="text-xs text-slate-400">{lang === 'tr' ? 'Bakiye' : 'Balance'}</p>
-          <p className="font-bold text-lg text-emerald-400">{player.money.toLocaleString()} ₺</p>
+          <p className={`font-bold text-lg ${player.money < 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+            {player.money.toLocaleString()} ₺
+          </p>
         </div>
         <div>
           <p className="text-xs text-slate-400">{lang === 'tr' ? 'Sağlık / Mutluluk' : 'Health / Happy'}</p>
