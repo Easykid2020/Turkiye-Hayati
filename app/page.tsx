@@ -1,9 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
 
 type Language = 'tr' | 'en';
-type ModalType = 'none' | 'shop' | 'jobs' | 'realestate' | 'travel' | 'inventory' | 'event';
+type ModalType = 'none' | 'shop' | 'jobs' | 'realestate' | 'travel' | 'inventory' | 'event' | 'save';
 type TileType = 'road' | 'grass' | 'house' | 'shop' | 'school' | 'mosque' | 'hospital' | 'office' | 'estate' | 'airport' | 'cafe' | 'gym';
 
 interface LocalizedText {
@@ -160,6 +165,9 @@ export default function GameHome() {
   const [activeEvent, setActiveEvent] = useState<GameEvent | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
   
+  const [saveCode, setSaveCode] = useState<string>('');
+  const [saveStatus, setSaveStatus] = useState<string>('');
+  
   const [player, setPlayer] = useState<PlayerStats>({
     money: 5000, health: 80, happiness: 75, energy: 100, gpa: 2.50, faith: 50,
     location: 'Istanbul', job: jobsList[0],
@@ -172,6 +180,48 @@ export default function GameHome() {
   };
 
   const clamp = (val: number, min = 0, max = 100) => Math.max(min, Math.min(max, val));
+
+  // --- Supabase Save/Load Logic ---
+  const saveGame = async () => {
+    if (!supabase) {
+      setSaveStatus(lang === 'tr' ? 'Veritabanı bağlantısı yok.' : 'Database not connected.');
+      return;
+    }
+    if (!saveCode.trim()) {
+      setSaveStatus(lang === 'tr' ? 'Lütfen bir kod girin.' : 'Please enter a code.');
+      return;
+    }
+    setSaveStatus(lang === 'tr' ? 'Kaydediliyor...' : 'Saving...');
+    const { error } = await supabase.from('saves').upsert({ id: saveCode, data: player });
+    if (error) {
+      setSaveStatus(lang === 'tr' ? 'Hata: ' + error.message : 'Error: ' + error.message);
+    } else {
+      setSaveStatus(lang === 'tr' ? 'Başarıyla buluta kaydedildi!' : 'Saved successfully to Cloud!');
+    }
+  };
+
+  const loadGame = async () => {
+    if (!supabase) {
+      setSaveStatus(lang === 'tr' ? 'Veritabanı bağlantısı yok.' : 'Database not connected.');
+      return;
+    }
+    if (!saveCode.trim()) {
+      setSaveStatus(lang === 'tr' ? 'Lütfen bir kod girin.' : 'Please enter a code.');
+      return;
+    }
+    setSaveStatus(lang === 'tr' ? 'Yükleniyor...' : 'Loading...');
+    const { data, error } = await supabase.from('saves').select('data').eq('id', saveCode).single();
+    if (error || !data) {
+      setSaveStatus(lang === 'tr' ? 'Kayıt bulunamadı!' : 'Save not found!');
+    } else {
+      setPlayer(data.data as PlayerStats);
+      setSaveStatus(lang === 'tr' ? 'Oyun başarıyla yüklendi!' : 'Game loaded successfully!');
+      setTimeout(() => {
+        setActiveModal('none');
+        setSaveStatus('');
+      }, 1500);
+    }
+  };
 
   const checkRandomEvent = (currentStats: PlayerStats): PlayerStats => {
     if (Math.random() < 0.2) {
@@ -354,7 +404,10 @@ export default function GameHome() {
             </p>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => setActiveModal('inventory')} className="bg-indigo-600 px-3 py-2 rounded-lg font-bold text-xs shadow-md">
+            <button onClick={() => setActiveModal('save')} className="bg-emerald-600 px-3 py-2 rounded-lg font-bold text-xs shadow-md border border-emerald-500">
+              ☁️ {lang === 'tr' ? 'Bulut' : 'Save'}
+            </button>
+            <button onClick={() => setActiveModal('inventory')} className="bg-indigo-600 px-3 py-2 rounded-lg font-bold text-xs shadow-md border border-indigo-500">
               🎒 {lang === 'tr' ? 'Çanta' : 'Bag'}
             </button>
             <button onClick={() => setLang(lang === 'tr' ? 'en' : 'tr')} className="bg-slate-800 px-4 py-2 rounded-lg font-bold text-xs border border-slate-700">
@@ -443,36 +496,68 @@ export default function GameHome() {
             <div className="flex justify-between items-center mb-6 border-b border-slate-700 pb-4">
               <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-widest">
                 {activeModal === 'event' && (lang === 'tr' ? '⚠️ Olay' : '⚠️ Event')}
+                {activeModal === 'save' && (lang === 'tr' ? '☁️ Bulut Kayıt' : '☁️ Cloud Save')}
                 {activeModal === 'inventory' && (lang === 'tr' ? '🎒 Çanta' : '🎒 Inventory')}
                 {activeModal === 'shop' && (lang === 'tr' ? '🛒 Market' : '🛒 Shop')}
                 {activeModal === 'jobs' && (lang === 'tr' ? '💼 İş Merkezi' : '💼 Job Center')}
                 {activeModal === 'realestate' && (lang === 'tr' ? '🏢 Emlak Ofisi' : '🏢 Real Estate')}
                 {activeModal === 'travel' && (lang === 'tr' ? '✈️ Havalimanı' : '✈️ Airport')}
               </h3>
-              <button onClick={() => { setActiveModal('none'); setActiveEvent(null); }} className="text-rose-500 font-black text-xl px-2">✕</button>
+              <button onClick={() => { setActiveModal('none'); setActiveEvent(null); }} className="text-rose-500 font-black text-xl px-2 hover:scale-110 transition">✕</button>
             </div>
 
             <div className="flex flex-col gap-3 overflow-y-auto pr-2 custom-scrollbar flex-1">
+              
+              {/* SAVE MODAL */}
+              {activeModal === 'save' && (
+                <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl flex flex-col gap-4">
+                  <p className="text-sm text-slate-400 text-center">
+                    {lang === 'tr' ? 'Oyununu buluta kaydetmek için gizli bir kod belirle. Geri dönmek istediğinde bu kodu kullan.' : 'Set a secret code to save your game to the cloud. Use this code to load it later.'}
+                  </p>
+                  <input
+                    type="text"
+                    value={saveCode}
+                    onChange={(e) => setSaveCode(e.target.value)}
+                    placeholder={lang === 'tr' ? 'Gizli Kod (örn: oyun-kaydim-1)' : 'Secret Code (e.g. my-save-1)'}
+                    className="w-full p-4 rounded-lg bg-slate-900 border-2 border-slate-700 text-white font-mono text-center focus:border-sky-500 outline-none"
+                  />
+                  <div className="flex gap-3 mt-2">
+                    <button onClick={saveGame} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg border-b-4 border-emerald-800 active:translate-y-1 active:border-b-0 transition-all">
+                      {lang === 'tr' ? '💾 Kaydet' : '💾 Save'}
+                    </button>
+                    <button onClick={loadGame} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg border-b-4 border-blue-800 active:translate-y-1 active:border-b-0 transition-all">
+                      {lang === 'tr' ? '📂 Yükle' : '📂 Load'}
+                    </button>
+                  </div>
+                  {saveStatus && <p className="text-center text-amber-400 text-sm font-bold mt-2 animate-pulse">{saveStatus}</p>}
+                </div>
+              )}
+
+              {/* EVENT MODAL */}
               {activeModal === 'event' && activeEvent && (
                 <div className="text-center p-6 bg-slate-950 rounded-xl border border-rose-900">
                   <h4 className="text-2xl font-bold text-rose-400 mb-4">{activeEvent.title[lang]}</h4>
                   <p className="text-lg text-slate-300">{activeEvent.description[lang]}</p>
-                  <button onClick={() => { setActiveModal('none'); setActiveEvent(null); }} className="mt-8 bg-rose-600 text-white font-bold py-3 px-8 rounded-lg">OK</button>
+                  <button onClick={() => { setActiveModal('none'); setActiveEvent(null); }} className="mt-8 bg-rose-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-rose-500">OK</button>
                 </div>
               )}
 
+              {/* INVENTORY MODAL */}
               {activeModal === 'inventory' && (
                 player.inventory.length === 0 ? <p className="text-slate-500 text-center py-10">{lang === 'tr' ? 'Çantan boş.' : 'Inventory is empty.'}</p> : 
                 player.inventory.map((item, idx) => (
                   <div key={idx} className="p-4 bg-slate-950 border border-slate-800 rounded-xl flex justify-between items-center">
                     <span className="font-bold text-white">{item.name[lang]}</span>
-                    {item.consumable && <button onClick={() => consumeItem(idx)} className="bg-emerald-600 px-3 py-1 rounded text-xs font-bold">{lang === 'tr' ? 'Kullan' : 'Use'}</button>}
+                    {item.consumable && <button onClick={() => consumeItem(idx)} className="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-lg text-xs font-bold transition">
+                      {lang === 'tr' ? 'Tüket' : 'Consume'}
+                    </button>}
                   </div>
                 ))
               )}
 
+              {/* SHOP MODAL */}
               {activeModal === 'shop' && shopItems.map((item) => (
-                <button key={item.id} onClick={() => buyItem(item)} className="p-4 bg-slate-950 border border-slate-800 rounded-xl text-left hover:border-amber-500 transition-colors flex justify-between items-center">
+                <button key={item.id} onClick={() => buyItem(item)} className="p-4 bg-slate-950 border border-slate-800 rounded-xl text-left hover:border-amber-500 transition flex justify-between items-center">
                   <div>
                     <span className="font-bold text-white block">{item.name[lang]}</span>
                     <span className="text-[10px] text-slate-500 uppercase">{item.category}</span>
@@ -481,15 +566,17 @@ export default function GameHome() {
                 </button>
               ))}
 
+              {/* JOBS MODAL */}
               {activeModal === 'jobs' && jobsList.map((job, idx) => (
-                <button key={idx} onClick={() => changeJob(job)} className="p-4 bg-slate-950 border border-slate-800 rounded-xl text-left hover:border-blue-500 flex justify-between items-center">
+                <button key={idx} onClick={() => changeJob(job)} className="p-4 bg-slate-950 border border-slate-800 rounded-xl text-left hover:border-blue-500 transition flex justify-between items-center">
                   <span className="font-bold text-white">{job[lang]}</span>
                   <span className="font-black text-emerald-400 bg-emerald-950/50 px-3 py-1 rounded-lg">+{job.salary.toLocaleString()} ₺</span>
                 </button>
               ))}
 
+              {/* REAL ESTATE MODAL */}
               {activeModal === 'realestate' && realEstateList.map((prop, idx) => (
-                <button key={idx} onClick={() => buyProperty(prop)} className="p-4 bg-slate-950 border border-slate-800 rounded-xl text-left hover:border-teal-500 flex justify-between items-center">
+                <button key={idx} onClick={() => buyProperty(prop)} className="p-4 bg-slate-950 border border-slate-800 rounded-xl text-left hover:border-teal-500 transition flex justify-between items-center">
                   <div>
                     <span className="font-bold text-white block">{prop.name[lang]}</span>
                     <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded mt-1 inline-block ${prop.type === 'rent' ? 'bg-rose-950 text-rose-400' : 'bg-teal-950 text-teal-400'}`}>
@@ -500,8 +587,9 @@ export default function GameHome() {
                 </button>
               ))}
 
+              {/* TRAVEL MODAL */}
               {activeModal === 'travel' && locations.map((loc) => (
-                <button key={loc.id} onClick={() => travelTo(loc)} disabled={player.location === loc.id} className={`p-4 rounded-xl text-left flex justify-between items-center ${player.location === loc.id ? 'bg-slate-900 opacity-50' : 'bg-slate-950 hover:border-purple-500'}`}>
+                <button key={loc.id} onClick={() => travelTo(loc)} disabled={player.location === loc.id} className={`p-4 rounded-xl text-left flex justify-between items-center transition ${player.location === loc.id ? 'bg-slate-900 opacity-50' : 'bg-slate-950 hover:border-purple-500'}`}>
                   <span className="font-bold text-white flex items-center gap-2">{loc.name[lang]} {player.location === loc.id && '📍'}</span>
                   {player.location !== loc.id && <span className="font-black text-purple-400 bg-purple-950/50 px-3 py-1 rounded-lg">BİLET: {loc.cost} ₺</span>}
                 </button>
