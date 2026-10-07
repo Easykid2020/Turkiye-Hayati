@@ -211,7 +211,7 @@ export default function GameHome() {
           ) : (
             logs.map((log, i) => (
               <p key={i} className={`text-sm py-1 border-b border-slate-800 last:border-0 ${i === logs.length - 1 ? 'text-rose-400 font-bold' : 'text-slate-500'}`}>
-                > {log}
+                {"> "} {log}
               </p>
             ))
           )}
