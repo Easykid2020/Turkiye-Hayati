@@ -3,7 +3,11 @@
 import React, { useState } from 'react';
 
 export default function ChatModal({ onClose, playerData, updateWallet, updateEnergy }: any) {
-  const [activeApp, setActiveApp] = useState<'home' | 'bank' | 'career' | 'stocks' | 'market' | 'lcw' | 'houses' | 'cars' | 'forbes'>('home');
+  const [activeApp, setActiveApp] = useState<'home' | 'bank' | 'career' | 'stocks' | 'market' | 'lcw' | 'houses' | 'cars' | 'forbes' | 'police' | 'messages'>('home');
+  
+  const [isArrested, setIsArrested] = useState(false);
+  const [arrestFine, setArrestFine] = useState(20000);
+
   const [jobs] = useState([
     { id: 'intern', title: 'Computer Engineering Intern', salary: 15000, desc: 'Coding, Verilog & debugging at Teknopark' },
     { id: 'barista', title: 'Kadıköy Barista', salary: 8000, desc: 'Make Turkish coffee & serve locals' },
@@ -45,7 +49,7 @@ export default function ChatModal({ onClose, playerData, updateWallet, updateEne
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-slate-900 w-full max-w-sm h-[700px] rounded-[3rem] shadow-2xl border-4 border-slate-700 flex flex-col overflow-hidden relative text-white">
+      <div className="bg-slate-900 w-full max-w-sm h-[720px] rounded-[3rem] shadow-2xl border-4 border-slate-700 flex flex-col overflow-hidden relative text-white">
         
         {/* Phone Notch */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-black rounded-b-2xl z-20 flex items-center justify-center">
@@ -99,6 +103,14 @@ export default function ChatModal({ onClose, playerData, updateWallet, updateEne
                 <button onClick={() => setActiveApp('forbes')} className="bg-yellow-600/20 border border-yellow-500/40 p-3 rounded-2xl flex flex-col items-center gap-1 hover:bg-yellow-600/30 transition-all">
                   <span className="text-2xl">👑</span>
                   <span className="text-[10px] font-bold">Forbes TR</span>
+                </button>
+                <button onClick={() => setActiveApp('police')} className="bg-rose-600/20 border border-rose-500/40 p-3 rounded-2xl flex flex-col items-center gap-1 hover:bg-rose-600/30 transition-all">
+                  <span className="text-2xl">🚨</span>
+                  <span className="text-[10px] font-bold">Police Dept</span>
+                </button>
+                <button onClick={() => setActiveApp('messages')} className="bg-sky-600/20 border border-sky-500/40 p-3 rounded-2xl flex flex-col items-center gap-1 hover:bg-sky-600/30 transition-all">
+                  <span className="text-2xl">💬</span>
+                  <span className="text-[10px] font-bold">Messages</span>
                 </button>
               </div>
 
@@ -309,6 +321,62 @@ export default function ChatModal({ onClose, playerData, updateWallet, updateEne
                     <span className="text-xs font-bold text-emerald-400">{f.netWorth}</span>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {activeApp === 'police' && (
+            <div className="space-y-4">
+              <button onClick={() => setActiveApp('home')} className="text-xs text-red-400 font-bold mb-2">← Back to Home</button>
+              <div className="bg-rose-950/60 border border-rose-500/40 p-4 rounded-2xl text-center">
+                <span className="text-3xl">🚨</span>
+                <h4 className="text-sm font-black mt-2">Emniyet Müdürlüğü / Police Station</h4>
+                <p className="text-[10px] text-rose-300 mt-1">
+                  {isArrested ? "You are currently locked up for street hustle inquiry!" : "Status: Clean record. Keep obeying city laws."}
+                </p>
+              </div>
+              {isArrested ? (
+                <div className="space-y-2">
+                  <button onClick={() => {
+                    if (playerData.money < arrestFine) {
+                      alert("Yetersiz bakiye!");
+                      return;
+                    }
+                    updateWallet(-arrestFine);
+                    setIsArrested(false);
+                    alert("Fine paid! Released from station.");
+                  }} className="w-full bg-emerald-600 hover:bg-emerald-500 p-3 rounded-xl text-xs font-bold">
+                    Pay Fine ({arrestFine.toLocaleString()} ₺) & Walk Out
+                  </button>
+                  <button onClick={() => alert("Lawyer filed appeal. Court date set!")} className="w-full bg-slate-800 hover:bg-slate-700 p-3 rounded-xl text-xs font-bold border border-slate-700">
+                    Call a Lawyer (7,000 ₺ Fee)
+                  </button>
+                </div>
+              ) : (
+                <button onClick={() => setIsArrested(true)} className="w-full bg-rose-600 hover:bg-rose-500 p-3 rounded-xl text-xs font-bold">
+                  Simulate Random Police Checkpoint / Arrest
+                </button>
+              )}
+            </div>
+          )}
+
+          {activeApp === 'messages' && (
+            <div className="space-y-4">
+              <button onClick={() => setActiveApp('home')} className="text-xs text-red-400 font-bold mb-2">← Back to Home</button>
+              <h4 className="text-sm font-black mb-3">💬 Messages & Governor News</h4>
+              <div className="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700 space-y-1">
+                <div className="flex justify-between items-center">
+                  <p className="text-xs font-bold text-red-400">Ankara/Istanbul Gov</p>
+                  <span className="text-[9px] text-slate-400">14:20</span>
+                </div>
+                <p className="text-xs text-slate-200">Transport subsidy is live this week! İETT and Dolmuş fares are half price.</p>
+              </div>
+              <div className="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700 space-y-1">
+                <div className="flex justify-between items-center">
+                  <p className="text-xs font-bold text-emerald-400">Ziraat Bankası</p>
+                  <span className="text-[9px] text-slate-400">12:00</span>
+                </div>
+                <p className="text-xs text-slate-200">Your account has been successfully credited with Birth Lottery funds.</p>
               </div>
             </div>
           )}
