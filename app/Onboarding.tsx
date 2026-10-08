@@ -1,8 +1,49 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
 
 type Language = 'en' | 'tr';
+
+function CustomCharacter({ customization }: { customization: any }) {
+  const groupRef = useRef<any>();
+  
+  useFrame(() => {
+    if (groupRef.current) {
+      groupRef.current.rotation.y += 0.005;
+    }
+  });
+
+  return (
+    <group ref={groupRef} position={[0, -1.2, 0]}>
+      {/* Head */}
+      <mesh position={[0, 2.5, 0]}>
+        <sphereGeometry args={[0.5, 32, 32]} />
+        <meshStandardMaterial color={customization.skinTone} />
+      </mesh>
+      {/* Hair */}
+      <mesh position={[0, 2.8, 0]}>
+        <boxGeometry args={[0.55, 0.25, 0.55]} />
+        <meshStandardMaterial color={customization.hairColor} />
+      </mesh>
+      {/* Body / Shirt */}
+      <mesh position={[0, 1.2, 0]}>
+        <cylinderGeometry args={[0.6, 0.6, 1.6, 32]} />
+        <meshStandardMaterial color={customization.shirtColor} />
+      </mesh>
+      {/* Pants */}
+      <mesh position={[-0.25, 0, 0]}>
+        <cylinderGeometry args={[0.2, 0.2, 0.8, 32]} />
+        <meshStandardMaterial color="#1e3a8a" />
+      </mesh>
+      <mesh position={[0.25, 0, 0]}>
+        <cylinderGeometry args={[0.2, 0.2, 0.8, 32]} />
+        <meshStandardMaterial color="#1e3a8a" />
+      </mesh>
+    </group>
+  );
+}
 
 export default function Onboarding({ onComplete }: { onComplete: (data: any) => void }) {
   const [lang, setLang] = useState<Language>('en'); 
@@ -13,16 +54,27 @@ export default function Onboarding({ onComplete }: { onComplete: (data: any) => 
   const [lotteryResult, setLotteryResult] = useState<any>(null);
   const [isSpinning, setIsSpinning] = useState(false);
 
+  // Customization States
+  const [customization, setCustomization] = useState({
+    skinTone: '#fcd34d',
+    hairColor: '#1e293b',
+    shirtColor: '#dc2626' // Ziraat Red default
+  });
+
   const text = {
     en: {
       title: 'Türkiye Hayatı',
       step: 'Step',
       of: 'of',
-      createAcc: 'Create account',
-      createSub: 'Write your own story in Türkiye Hayatı.',
+      createAcc: 'Create account & Avatar',
+      createSub: 'Customize your look and write your story.',
       username: 'Username',
       placeholder: 'e.g. istanbul_boss',
       continue: 'Continue',
+      avatarTitle: 'Avatar Customization',
+      skinLabel: 'Skin Tone',
+      hairLabel: 'Hair Color',
+      shirtLabel: 'Shirt Color',
       personality: 'Personality',
       persSub: 'Choose 2 traits for',
       dream: 'Dream',
@@ -46,11 +98,15 @@ export default function Onboarding({ onComplete }: { onComplete: (data: any) => 
       title: 'Türkiye Hayatı',
       step: 'Adım',
       of: '/',
-      createAcc: 'Hesap oluştur',
-      createSub: 'Türkiye Hayatı\'nda kendi hikayeni yaz.',
+      createAcc: 'Hesap ve Avatar Oluştur',
+      createSub: 'Görünümünü özelleştir ve hikayeni yaz.',
       username: 'Kullanıcı Adı',
       placeholder: 'örn. istanbul_beyi',
       continue: 'Devam Et',
+      avatarTitle: 'Avatar Özelleştirme',
+      skinLabel: 'Ten Rengi',
+      hairLabel: 'Saç Rengi',
+      shirtLabel: 'Gömlek Rengi',
       personality: 'Karakter',
       persSub: 'Şunun için 2 özellik seç:',
       dream: 'Hayal',
@@ -119,6 +175,7 @@ export default function Onboarding({ onComplete }: { onComplete: (data: any) => 
       username,
       traits,
       dream,
+      customization,
       money: lotteryResult.money,
       location: neighborhood.id,
       rent: neighborhood.rent
@@ -154,12 +211,15 @@ export default function Onboarding({ onComplete }: { onComplete: (data: any) => 
       <div className="bg-white w-full max-w-3xl rounded-[2rem] shadow-[0_15px_40px_rgba(250,204,21,0.15)] border border-slate-200 flex flex-col md:flex-row overflow-hidden min-h-[500px] mt-12 relative">
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-600 via-red-500 to-yellow-400 z-10"></div>
 
+        {/* LIVE 3D AVATAR CUSTOMIZER PREVIEW */}
         <div className="bg-slate-50 w-full md:w-5/12 p-8 flex flex-col items-center justify-center border-r border-slate-100 relative">
-          <div className="w-full h-full min-h-[300px] flex-1 relative bg-gradient-to-b from-slate-200 to-slate-100 rounded-3xl overflow-hidden shadow-inner border-[4px] border-white mb-4 flex flex-col items-center justify-center">
-            <div className="w-20 h-32 bg-red-600 rounded-2xl shadow-lg relative flex items-center justify-center border border-red-500 animate-pulse">
-               <span className="text-white font-black text-xs">TÜRKİYE</span>
-            </div>
-            <p className="text-[10px] font-bold text-slate-400 mt-3 uppercase tracking-wider">3D Avatar Preview</p>
+          <div className="w-full h-full min-h-[300px] flex-1 relative bg-gradient-to-b from-slate-200 to-slate-100 rounded-3xl overflow-hidden shadow-inner border-[4px] border-white mb-4">
+            <Canvas camera={{ position: [0, 1, 5], fov: 50 }}>
+              <ambientLight intensity={0.6} />
+              <directionalLight position={[5, 5, 5]} intensity={1} />
+              <CustomCharacter customization={customization} />
+              <OrbitControls enableZoom={false} enablePan={false} minPolarAngle={Math.PI / 2.5} maxPolarAngle={Math.PI / 2.5} />
+            </Canvas>
           </div>
           <p className="font-bold text-slate-700 z-10">{username || '@username'}</p>
         </div>
@@ -169,7 +229,7 @@ export default function Onboarding({ onComplete }: { onComplete: (data: any) => 
           {step === 1 && (
             <div className="animate-fade-in">
               <h2 className="text-2xl font-black text-slate-800 mb-2">{t.createAcc}</h2>
-              <p className="text-sm text-slate-500 mb-8">{t.createSub}</p>
+              <p className="text-sm text-slate-500 mb-6">{t.createSub}</p>
               
               <div className="space-y-4">
                 <div>
@@ -182,11 +242,45 @@ export default function Onboarding({ onComplete }: { onComplete: (data: any) => 
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100 transition-all font-medium"
                   />
                 </div>
+
+                <div className="pt-2">
+                  <p className="text-xs font-bold text-slate-700 mb-3">{t.avatarTitle}</p>
+                  
+                  <div className="space-y-2.5">
+                    <div className="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                      <span className="text-xs font-semibold text-slate-600">{t.skinLabel}</span>
+                      <div className="flex gap-1.5">
+                        {['#fcd34d', '#f87171', '#d97706', '#92400e'].map(color => (
+                          <button key={color} onClick={() => setCustomization(c => ({ ...c, skinTone: color }))} style={{ backgroundColor: color }} className={`w-6 h-6 rounded-full border-2 ${customization.skinTone === color ? 'border-slate-900 scale-110' : 'border-transparent'}`} />
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                      <span className="text-xs font-semibold text-slate-600">{t.hairLabel}</span>
+                      <div className="flex gap-1.5">
+                        {['#1e293b', '#b45309', '#78716c', '#0f172a'].map(color => (
+                          <button key={color} onClick={() => setCustomization(c => ({ ...c, hairColor: color }))} style={{ backgroundColor: color }} className={`w-6 h-6 rounded-full border-2 ${customization.hairColor === color ? 'border-slate-900 scale-110' : 'border-transparent'}`} />
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                      <span className="text-xs font-semibold text-slate-600">{t.shirtLabel}</span>
+                      <div className="flex gap-1.5">
+                        {['#dc2626', '#2563eb', '#16a34a', '#eab308'].map(color => (
+                          <button key={color} onClick={() => setCustomization(c => ({ ...c, shirtColor: color }))} style={{ backgroundColor: color }} className={`w-6 h-6 rounded-full border-2 ${customization.shirtColor === color ? 'border-slate-900 scale-110' : 'border-transparent'}`} />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
+
               <button 
                 onClick={() => setStep(2)}
                 disabled={!username.trim()}
-                className="w-full bg-red-600 hover:bg-red-500 disabled:bg-slate-200 text-white font-bold py-3.5 rounded-xl mt-8 transition-colors shadow-md disabled:shadow-none"
+                className="w-full bg-red-600 hover:bg-red-500 disabled:bg-slate-200 text-white font-bold py-3.5 rounded-xl mt-6 transition-colors shadow-md disabled:shadow-none"
               >
                 {t.continue}
               </button>
