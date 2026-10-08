@@ -141,4 +141,341 @@ export default function ChatModal({ onClose, playerData, updateWallet, updateEne
           {activeApp === 'bank' && (
             <div className="space-y-4">
               <button onClick={() => setActiveApp('home')} className="text-xs text-red-400 font-bold mb-2">← Back to Home</button>
-              <div className="bg-gradient-to-r from-red-600 to-red-800 p-5
+              <div className="bg-gradient-to-r from-red-600 to-red-800 p-5 rounded-2xl shadow-lg">
+                <p className="text-[10px] uppercase font-bold text-red-200">Ziraat Bankası Account</p>
+                <p className="text-2xl font-black mt-1">{playerData.money.toLocaleString()} ₺</p>
+                <p className="text-[10px] text-red-100 mt-2">Weekly Rent Due: {playerData.rent.toLocaleString()} ₺ / wk</p>
+              </div>
+              <button onClick={() => updateWallet(100000)} className="w-full bg-slate-800 hover:bg-slate-700 p-3 rounded-xl text-xs font-bold border border-slate-700">
+                + Top Up Wallet (100k ₺ Simulation)
+              </button>
+            </div>
+          )}
+
+          {activeApp === 'career' && (
+            <div className="space-y-4">
+              <button onClick={() => setActiveApp('home')} className="text-xs text-red-400 font-bold mb-2">← Back to Home</button>
+              <h4 className="text-sm font-black mb-3">Available Positions</h4>
+              <div className="space-y-3">
+                {jobs.map(j => (
+                  <div key={j.id} className="bg-slate-800/80 p-3 rounded-2xl border border-slate-700 flex justify-between items-center">
+                    <div>
+                      <p className="text-xs font-bold">{j.title}</p>
+                      <p className="text-[10px] text-slate-400">{j.desc}</p>
+                      <p className="text-[10px] text-emerald-400 font-bold mt-1">{j.salary.toLocaleString()} ₺ / shift</p>
+                    </div>
+                    <button onClick={() => { setCurrentJob(j.title); alert(`Hired as ${j.title}!`); }} className="bg-red-600 hover:bg-red-500 px-3 py-2 rounded-xl text-[10px] font-bold">
+                      Apply
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeApp === 'stocks' && (
+            <div className="space-y-4">
+              <button onClick={() => setActiveApp('home')} className="text-xs text-red-400 font-bold mb-2">← Back to Home</button>
+              <h4 className="text-sm font-black mb-3">BIST 100 & Crypto Market</h4>
+              <div className="bg-slate-800/80 p-3 rounded-2xl border border-slate-700 flex justify-between items-center">
+                <div>
+                  <p className="text-xs font-bold">THYAO (Turkish Airlines)</p>
+                  <p className="text-[10px] text-emerald-400">+4.20% Today</p>
+                </div>
+                <span className="text-xs font-bold">298.50 ₺</span>
+              </div>
+              <div className="bg-slate-800/80 p-3 rounded-2xl border border-slate-700 flex justify-between items-center">
+                <div>
+                  <p className="text-xs font-bold">GARAN (Garanti BBVA)</p>
+                  <p className="text-[10px] text-red-400">-1.15% Today</p>
+                </div>
+                <span className="text-xs font-bold">114.20 ₺</span>
+              </div>
+            </div>
+          )}
+
+          {activeApp === 'market' && (
+            <div className="space-y-4">
+              <button onClick={() => setActiveApp('home')} className="text-xs text-red-400 font-bold mb-2">← Back to Home</button>
+              <h4 className="text-sm font-black mb-3">🛒 BİM / Migros Market</h4>
+              <div className="space-y-2.5">
+                {marketItems.map(item => (
+                  <div key={item.id} className="bg-slate-800/80 p-3 rounded-2xl border border-slate-700 flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{item.icon}</span>
+                      <div>
+                        <p className="text-xs font-bold">{item.name}</p>
+                        <p className="text-[10px] text-emerald-400 font-bold">+{item.energy} Energy</p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        if (playerData.money < item.cost) {
+                          alert("Yetersiz bakiye!");
+                          return;
+                        }
+                        updateWallet(-item.cost);
+                        updateEnergy(item.energy);
+                        alert(`Purchased ${item.name}!`);
+                      }} 
+                      className="bg-amber-600 hover:bg-amber-500 px-3 py-2 rounded-xl text-[10px] font-bold"
+                    >
+                      {item.cost} ₺
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeApp === 'lcw' && (
+            <div className="space-y-4">
+              <button onClick={() => setActiveApp('home')} className="text-xs text-red-400 font-bold mb-2">← Back to Home</button>
+              <h4 className="text-sm font-black mb-3">🛍️ LC Waikiki Boutique</h4>
+              <div className="space-y-2.5">
+                {lcwItems.map(item => (
+                  <div key={item.id} className="bg-slate-800/80 p-3 rounded-2xl border border-slate-700 flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{item.icon}</span>
+                      <div>
+                        <p className="text-xs font-bold">{item.name}</p>
+                        <p className="text-[10px] text-blue-400 font-bold">Style & Happiness Boost</p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        if (playerData.money < item.cost) {
+                          alert("Yetersiz bakiye!");
+                        } else {
+                          updateWallet(-item.cost);
+                          alert(`Bought ${item.name} from LC Waikiki!`);
+                        }
+                      }} 
+                      className="bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-xl text-[10px] font-bold"
+                    >
+                      {item.cost} ₺
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeApp === 'houses' && (
+            <div className="space-y-4">
+              <button onClick={() => setActiveApp('home')} className="text-xs text-red-400 font-bold mb-2">← Back to Home</button>
+              <h4 className="text-sm font-black mb-3">🏠 Real Estate Agency</h4>
+              <div className="space-y-2.5">
+                {houses.map(h => (
+                  <div key={h.id} className="bg-slate-800/80 p-3 rounded-2xl border border-slate-700 flex justify-between items-center">
+                    <div>
+                      <p className="text-xs font-bold">{h.name}</p>
+                      <p className="text-[10px] text-slate-400">{h.desc}</p>
+                      <p className="text-[10px] text-red-400 font-bold mt-1">{h.rent.toLocaleString()} ₺ / week</p>
+                    </div>
+                    <button onClick={() => alert(`Moved into ${h.name}!`)} className="bg-indigo-600 hover:bg-indigo-500 px-3 py-2 rounded-xl text-[10px] font-bold">
+                      Rent
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeApp === 'cars' && (
+            <div className="space-y-4">
+              <button onClick={() => setActiveApp('home')} className="text-xs text-red-400 font-bold mb-2">← Back to Home</button>
+              <h4 className="text-sm font-black mb-3">🚗 Car Showroom</h4>
+              <div className="space-y-2.5">
+                {cars.map(c => (
+                  <div key={c.id} className="bg-slate-800/80 p-3 rounded-2xl border border-slate-700 flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{c.icon}</span>
+                      <div>
+                        <p className="text-xs font-bold">{c.name}</p>
+                        <p className="text-[10px] text-slate-400">{c.desc}</p>
+                        <p className="text-[10px] text-cyan-400 font-bold mt-1">{c.cost.toLocaleString()} ₺</p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        if (playerData.money < c.cost) {
+                          alert("Yetersiz bakiye!");
+                        } else {
+                          updateWallet(-c.cost);
+                          alert(`Congratulations on your new ${c.name}!`);
+                        }
+                      }} 
+                      className="bg-cyan-600 hover:bg-cyan-500 px-3 py-2 rounded-xl text-[10px] font-bold"
+                    >
+                      Buy
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeApp === 'forbes' && (
+            <div className="space-y-4">
+              <button onClick={() => setActiveApp('home')} className="text-xs text-red-400 font-bold mb-2">← Back to Home</button>
+              <div className="bg-gradient-to-r from-yellow-600 to-amber-700 p-4 rounded-2xl text-center mb-3">
+                <h4 className="text-sm font-black">👑 FORBES TÜRKİYE</h4>
+                <p className="text-[10px] text-amber-200">The Richest Citizens in Türkiye Hayatı</p>
+              </div>
+              <div className="space-y-2.5">
+                {forbesList.map(f => (
+                  <div key={f.rank} className="bg-slate-800/80 p-3 rounded-2xl border border-slate-700 flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-black text-yellow-400">#{f.rank}</span>
+                      <div>
+                        <p className="text-xs font-bold">{f.name}</p>
+                        <p className="text-[10px] text-slate-400">{f.title}</p>
+                      </div>
+                    </div>
+                    <span className="text-xs font-bold text-emerald-400">{f.netWorth}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeApp === 'police' && (
+            <div className="space-y-4">
+              <button onClick={() => setActiveApp('home')} className="text-xs text-red-400 font-bold mb-2">← Back to Home</button>
+              <div className="bg-rose-950/60 border border-rose-500/40 p-4 rounded-2xl text-center">
+                <span className="text-3xl">🚨</span>
+                <h4 className="text-sm font-black mt-2">Emniyet Müdürlüğü / Police Station</h4>
+                <p className="text-[10px] text-rose-300 mt-1">
+                  {isArrested ? "You are currently locked up for street hustle inquiry!" : "Status: Clean record. Keep obeying city laws."}
+                </p>
+              </div>
+              {isArrested ? (
+                <div className="space-y-2">
+                  <button onClick={() => {
+                    if (playerData.money < arrestFine) {
+                      alert("Yetersiz bakiye!");
+                      return;
+                    }
+                    updateWallet(-arrestFine);
+                    setIsArrested(false);
+                    alert("Fine paid! Released from station.");
+                  }} className="w-full bg-emerald-600 hover:bg-emerald-500 p-3 rounded-xl text-xs font-bold">
+                    Pay Fine ({arrestFine.toLocaleString()} ₺) & Walk Out
+                  </button>
+                  <button onClick={() => alert("Lawyer filed appeal. Court date set!")} className="w-full bg-slate-800 hover:bg-slate-700 p-3 rounded-xl text-xs font-bold border border-slate-700">
+                    Call a Lawyer (7,000 ₺ Fee)
+                  </button>
+                </div>
+              ) : (
+                <button onClick={() => setIsArrested(true)} className="w-full bg-rose-600 hover:bg-rose-500 p-3 rounded-xl text-xs font-bold">
+                  Simulate Random Police Checkpoint / Arrest
+                </button>
+              )}
+            </div>
+          )}
+
+          {activeApp === 'masak' && (
+            <div className="space-y-4">
+              <button onClick={() => setActiveApp('home')} className="text-xs text-red-400 font-bold mb-2">← Back to Home</button>
+              <div className="bg-orange-950/60 border border-orange-500/40 p-4 rounded-2xl text-center">
+                <span className="text-3xl">⚖️</span>
+                <h4 className="text-sm font-black mt-2">MASAK Investigation Notice</h4>
+                <p className="text-[10px] text-orange-200 mt-1">
+                  {masakFlagged 
+                    ? "Official Notice: Unexplained high wealth detected in your Ziraat account. Tax audit required!" 
+                    : "Status: MASAK audit cleared. Your funds are fully legal."}
+                </p>
+              </div>
+              {masakFlagged ? (
+                <div className="space-y-2.5">
+                  <button onClick={() => {
+                    if (playerData.money < taxPenalty) {
+                      alert("Yetersiz bakiye!");
+                      return;
+                    }
+                    updateWallet(-taxPenalty);
+                    setMasakFlagged(false);
+                    alert("Tax penalty paid! MASAK audit closed successfully.");
+                  }} className="w-full bg-emerald-600 hover:bg-emerald-500 p-3 rounded-xl text-xs font-bold">
+                    Pay Tax Penalty ({taxPenalty.toLocaleString()} ₺)
+                  </button>
+                  <button onClick={() => alert("CPA (Mali Müşavir) hired! Audit deferred.")} className="w-full bg-slate-800 hover:bg-slate-700 p-3 rounded-xl text-xs font-bold border border-slate-700">
+                    Hire CPA / Mali Müşavir (25,000 ₺)
+                  </button>
+                </div>
+              ) : (
+                <p className="text-xs text-center text-emerald-400 font-bold mt-4">You are clear of financial investigations.</p>
+              )}
+            </div>
+          )}
+
+          {activeApp === 'fantasy' && (
+            <div className="space-y-4">
+              <button onClick={() => setActiveApp('home')} className="text-xs text-red-400 font-bold mb-2">← Back to Home</button>
+              <div className="bg-emerald-950/60 border border-emerald-500/40 p-4 rounded-2xl text-center mb-3">
+                <span className="text-3xl">⚽</span>
+                <h4 className="text-sm font-black mt-2">Süper Lig Fantasy Manager</h4>
+                <p className="text-[10px] text-emerald-200 mt-1">Pick your dream team, score points, and win weekly league prizes!</p>
+              </div>
+              <div className="space-y-2.5">
+                <div className="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700 flex justify-between items-center">
+                  <div>
+                    <p className="text-xs font-bold">Gameweek 8 Squad</p>
+                    <p className="text-[10px] text-emerald-400">Total Points: 74 pts</p>
+                  </div>
+                  <button onClick={() => {
+                    updateWallet(15000);
+                    alert("Weekly ranking bonus earned! +15,000 ₺ added to Ziraat account.");
+                  }} className="bg-emerald-600 hover:bg-emerald-500 px-3.5 py-2 rounded-xl text-xs font-bold">
+                    Claim Rewards
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeApp === 'taxi' && (
+            <div className="space-y-4">
+              <button onClick={() => setActiveApp('home')} className="text-xs text-red-400 font-bold mb-2">← Back to Home</button>
+              <div className="bg-yellow-950/60 border border-yellow-500/40 p-4 rounded-2xl text-center mb-3">
+                <span className="text-3xl">🚕</span>
+                <h4 className="text-sm font-black mt-2">BiTaksi Ride Hailing</h4>
+                <p className="text-[10px] text-yellow-200 mt-1">Instant transport across city districts</p>
+              </div>
+              <div className="space-y-2.5">
+                {['Kadıköy -> Beşiktaş (120 ₺)', 'Bağcılar -> Kızılay (350 ₺)', 'Etiler -> Nişantaşı (200 ₺)'].map((route, i) => (
+                  <div key={i} className="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700 flex justify-between items-center">
+                    <p className="text-xs font-bold">{route}</p>
+                    <button onClick={() => alert("BiTaksi booked! You arrived safely.")} className="bg-yellow-500 hover:bg-yellow-400 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-bold">
+                      Book Ride
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeApp === 'messages' && (
+            <div className="space-y-4">
+              <button onClick={() => setActiveApp('home')} className="text-xs text-red-400 font-bold mb-2">← Back to Home</button>
+              <h4 className="text-sm font-black mb-3">💬 Messages & Governor News</h4>
+              <div className="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700 space-y-1">
+                <div className="flex justify-between items-center">
+                  <p className="text-xs font-bold text-orange-400">MASAK Official</p>
+                  <span className="text-[9px] text-slate-400">14:50</span>
+                </div>
+                <p className="text-xs text-slate-200">Notice issued regarding your recent account inflows. Please review the MASAK Audit app.</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Bottom Phone Bar */}
+        <div className="py-3 bg-slate-950 flex justify-center border-t border-slate-800">
+          <div className="w-32 h-1 bg-slate-700 rounded-full"></div>
+        </div>
+      </div>
+    </div>
+  );
+}
