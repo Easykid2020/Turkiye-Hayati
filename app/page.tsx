@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Text } from '@react-three/drei';
+import { OrbitControls } from '@react-three/drei';
 import { createClient } from '@supabase/supabase-js';
 import ChatModal from './ChatModal';
 import Onboarding from './Onboarding';
@@ -13,80 +13,94 @@ const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supaba
 
 type Tab = 'home' | 'map' | 'phone';
 
-function ImmersiveCityMap({ currentLocation, onSelectLocation }: { currentLocation: string, onSelectLocation: (id: string) => void }) {
+function DetailedBuilding({ position, color, height, label, isSelected, onClick }: any) {
   return (
-    <group position={[0, -1, 0]}>
-      {/* Asphalt Ground */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]}>
-        <planeGeometry args={[40, 40]} />
+    <group position={position} onClick={onClick}>
+      {/* Main Structure */}
+      <mesh position={[0, height / 2, 0]}>
+        <boxGeometry args={[3.2, height, 3.2]} />
+        <meshStandardMaterial color={isSelected ? '#dc2626' : color} roughness={0.3} metalness={0.2} />
+      </mesh>
+      
+      {/* Roof Detail */}
+      <mesh position={[0, height + 0.1, 0]}>
+        <boxGeometry args={[3.4, 0.2, 3.4]} />
         <meshStandardMaterial color="#1e293b" />
       </mesh>
 
-      {/* Cross Roads / Streets */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-        <planeGeometry args={[36, 4]} />
-        <meshStandardMaterial color="#334155" />
-      </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-        <planeGeometry args={[4, 36]} />
-        <meshStandardMaterial color="#334155" />
+      {/* Glowing Windows / Storefront */}
+      <mesh position={[0, height * 0.4, 1.65]}>
+        <boxGeometry args={[2.2, height * 0.5, 0.1]} />
+        <meshStandardMaterial color="#38bdf8" emissive="#0284c7" emissiveIntensity={0.8} />
       </mesh>
 
-      {/* DISTRICT 1: KADIKÖY SAHİL (Blue Theme / Waterfront) */}
-      <group position={[-5, 0, -5]} onClick={() => onSelectLocation('kadikoy')}>
-        {/* Building Base */}
-        <mesh position={[0, 1, 0]}>
-          <boxGeometry args={[3.5, 2, 3.5]} />
-          <meshStandardMaterial color={currentLocation === 'kadikoy' ? '#dc2626' : '#2563eb'} />
-        </mesh>
-        {/* Storefront Windows */}
-        <mesh position={[0, 0.5, 1.8]}>
-          <boxGeometry args={[2.5, 0.8, 0.1]} />
-          <meshStandardMaterial color="#93c5fd" emissive="#3b82f6" emissiveIntensity={0.5} />
-        </mesh>
-        <mesh position={[0, 2.2, 0]}>
-          <coneGeometry args={[2.5, 1, 4]} />
-          <meshStandardMaterial color="#1d4ed8" />
-        </mesh>
-      </group>
+      {/* Billboard / Signage Header */}
+      <mesh position={[0, height + 0.6, 0]}>
+        <boxGeometry args={[2.6, 0.8, 0.4]} />
+        <meshStandardMaterial color="#0f172a" emissive="#eab308" emissiveIntensity={0.5} />
+      </mesh>
+    </group>
+  );
+}
 
-      {/* DISTRICT 2: KIZILAY MEYDANI (Ankara Center + Custom Billboard) */}
-      <group position={[5, 0, -5]} onClick={() => onSelectLocation('kizilay')}>
-        {/* Modern Tower */}
-        <mesh position={[0, 1.8, 0]}>
-          <boxGeometry args={[3, 3.6, 3]} />
-          <meshStandardMaterial color={currentLocation === 'kizilay' ? '#dc2626' : '#d97706'} />
-        </mesh>
-        {/* Glowing Custom Billboard */}
-        <mesh position={[0, 3.2, 1.55]}>
-          <boxGeometry args={[2.6, 1, 0.2]} />
-          <meshStandardMaterial color="#000000" emissive="#f59e0b" emissiveIntensity={1} />
-        </mesh>
-      </group>
+function HyperRealisticCityViewport({ currentLocation, onSelectLocation }: { currentLocation: string, onSelectLocation: (id: string) => void }) {
+  return (
+    <group position={[0, -1, 0]}>
+      {/* Dark Asphalt Street Floor */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+        <planeGeometry args={[50, 50]} />
+        <meshStandardMaterial color="#090d16" roughness={0.9} />
+      </mesh>
 
-      {/* DISTRICT 3: BEŞİKTAŞ ÇARŞI */}
-      <group position={[-5, 0, 5]} onClick={() => onSelectLocation('besiktas')}>
-        <mesh position={[0, 1.2, 0]}>
-          <boxGeometry args={[3.5, 2.4, 3.5]} />
-          <meshStandardMaterial color={currentLocation === 'besiktas' ? '#dc2626' : '#059669'} />
-        </mesh>
-        <mesh position={[0, 0.6, 1.8]}>
-          <boxGeometry args={[2.5, 0.8, 0.1]} />
-          <meshStandardMaterial color="#6ee7b7" emissive="#10b981" emissiveIntensity={0.5} />
-        </mesh>
-      </group>
+      {/* Roads / Intersections */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
+        <planeGeometry args={[44, 5]} />
+        <meshStandardMaterial color="#1e293b" />
+      </mesh>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
+        <planeGeometry args={[5, 44]} />
+        <meshStandardMaterial color="#1e293b" />
+      </mesh>
 
-      {/* DISTRICT 4: BAĞCILAR SOKAK */}
-      <group position={[5, 0, 5]} onClick={() => onSelectLocation('bagcilar')}>
-        <mesh position={[0, 0.8, 0]}>
-          <boxGeometry args={[3.5, 1.6, 3.5]} />
-          <meshStandardMaterial color={currentLocation === 'bagcilar' ? '#dc2626' : '#475569'} />
-        </mesh>
-        <mesh position={[0, 0.4, 1.8]}>
-          <boxGeometry args={[2.5, 0.6, 0.1]} />
-          <meshStandardMaterial color="#cbd5e1" />
-        </mesh>
-      </group>
+      {/* Kadıköy District (Waterfront Blue Architecture) */}
+      <DetailedBuilding 
+        position={[-6, 0, -6]} 
+        color="#2563eb" 
+        height={3.5} 
+        label="Kadıköy" 
+        isSelected={currentLocation === 'kadikoy'} 
+        onClick={() => onSelectLocation('kadikoy')} 
+      />
+
+      {/* Kızılay Square (Ankara Financial & Billboard Zone) */}
+      <DetailedBuilding 
+        position={[6, 0, -6]} 
+        color="#d97706" 
+        height={4.8} 
+        label="Kızılay" 
+        isSelected={currentLocation === 'kizilay'} 
+        onClick={() => onSelectLocation('kizilay')} 
+      />
+
+      {/* Beşiktaş Çarşı (Culture & Entertainment Hub) */}
+      <DetailedBuilding 
+        position={[-6, 0, 6]} 
+        color="#059669" 
+        height={4.0} 
+        label="Beşiktaş" 
+        isSelected={currentLocation === 'besiktas'} 
+        onClick={() => onSelectLocation('besiktas')} 
+      />
+
+      {/* Bağcılar Sokak (Street Hustle Zone) */}
+      <DetailedBuilding 
+        position={[6, 0, 6]} 
+        color="#475569" 
+        height={2.8} 
+        label="Bağcılar" 
+        isSelected={currentLocation === 'bagcilar'} 
+        onClick={() => onSelectLocation('bagcilar')} 
+      />
     </group>
   );
 }
@@ -119,7 +133,7 @@ export default function GameHome() {
       week: 'week',
       health: 'Health',
       energy: 'Energy',
-      travelPrompt: 'Click any 3D building to travel & inspect billboards'
+      travelPrompt: 'Click detailed 3D buildings to explore districts & billboards'
     },
     tr: {
       activeLocation: 'AKTİF BÖLGE',
@@ -132,7 +146,7 @@ export default function GameHome() {
       week: 'hafta',
       health: 'Sağlık',
       energy: 'Enerji',
-      travelPrompt: 'Seyahat etmek ve tabelaları görmek için binalara tıkla'
+      travelPrompt: 'Bölgeleri ve tabelaları keşfetmek için 3D binalara tıkla'
     }
   };
 
@@ -177,7 +191,7 @@ export default function GameHome() {
   const currentLocation = locations.find(l => l.id === player.location) || locations[0];
 
   return (
-    <main className="min-h-screen bg-[#0f172a] text-slate-800 flex flex-col font-sans overflow-hidden relative">
+    <main className="min-h-screen bg-[#090d16] text-slate-800 flex flex-col font-sans overflow-hidden relative">
       
       {/* FLOATING TOP STATUS BAR */}
       <header className="fixed top-4 left-1/2 -translate-x-1/2 z-40 w-[95%] max-w-4xl flex justify-between items-center pointer-events-none">
@@ -209,7 +223,7 @@ export default function GameHome() {
         </div>
       </div>
 
-      {/* MAIN CONTENT AREA: IMMERSIVE 3D CITY VIEWPORT */}
+      {/* MAIN CONTENT AREA: HIGH-END 3D ARCHITECTURAL VIEWPORT */}
       <div className="flex-1 w-full h-full flex items-center justify-center p-4 pt-24 pb-32">
         {activeTab === 'map' && (
           <div className="bg-white/95 backdrop-blur-xl p-6 rounded-[3rem] shadow-2xl border border-white/20 max-w-4xl w-full flex flex-col items-center">
@@ -219,20 +233,20 @@ export default function GameHome() {
               <p className="text-xs text-slate-500">{currentLocation.desc[language]}</p>
             </div>
 
-            {/* Immersive 3D Street Canvas */}
-            <div className="w-full h-96 bg-gradient-to-b from-slate-950 to-slate-900 rounded-3xl overflow-hidden shadow-2xl border-4 border-slate-200 relative mb-4">
-              <Canvas camera={{ position: [8, 8, 8], fov: 50 }}>
-                <ambientLight intensity={0.9} />
-                <directionalLight position={[10, 25, 10]} intensity={1.8} />
-                <ImmersiveCityMap currentLocation={player.location} onSelectLocation={(id) => travelToDistrict(id)} />
+            {/* Architectural 3D Canvas Viewport */}
+            <div className="w-full h-96 bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 rounded-3xl overflow-hidden shadow-2xl border-4 border-slate-200 relative mb-4">
+              <Canvas camera={{ position: [10, 10, 10], fov: 45 }}>
+                <ambientLight intensity={1.1} />
+                <directionalLight position={[15, 30, 15]} intensity={2.0} />
+                <HyperRealisticCityViewport currentLocation={player.location} onSelectLocation={(id) => travelToDistrict(id)} />
                 <OrbitControls enableZoom={true} enablePan={true} maxPolarAngle={Math.PI / 2.2} />
               </Canvas>
               <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-md text-white text-[11px] font-semibold px-4 py-2 rounded-xl shadow-lg border border-white/10 pointer-events-none flex items-center gap-2">
-                🏙️ {t.travelPrompt}
+                🏛️ {t.travelPrompt}
               </div>
             </div>
 
-            {/* District Quick Switcher */}
+            {/* District Selector Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full">
               {locations.map(loc => (
                 <button
