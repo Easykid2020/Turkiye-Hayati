@@ -9,7 +9,7 @@ const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supaba
 
 type Language = 'tr' | 'en';
 type ModalType = 'none' | 'shop' | 'jobs' | 'realestate' | 'travel' | 'inventory' | 'event' | 'save';
-type TileType = 'road' | 'grass' | 'house' | 'shop' | 'school' | 'mosque' | 'hospital' | 'office' | 'estate' | 'airport' | 'cafe' | 'gym';
+type TileType = 'road' | 'grass' | 'house' | 'shop' | 'club' | 'mosque' | 'hospital' | 'office' | 'estate' | 'airport' | 'cafe' | 'gym';
 
 interface LocalizedText {
   tr: string;
@@ -33,7 +33,6 @@ interface ShopItemEffect {
   happiness?: number;
   energy?: number;
   health?: number;
-  gpa?: number;
 }
 
 interface ShopItem {
@@ -62,7 +61,6 @@ interface PlayerStats {
   health: number;
   happiness: number;
   energy: number;
-  gpa: number;
   faith: number;
   location: string;
   job: Job;
@@ -80,7 +78,7 @@ const locations: LocationData[] = [
 ];
 
 const jobsList: Job[] = [
-  { tr: 'Öğrenci (İşsiz)', en: 'Student (Unemployed)', salary: 0 },
+  { tr: 'Sokak Hustlerı', en: 'Street Hustler', salary: 0 },
   { tr: 'Kafe Barista', en: 'Cafe Barista', salary: 11500 },
   { tr: 'Mağaza Görevlisi', en: 'Retail Worker', salary: 12000 },
   { tr: 'Motorlu Kurye', en: 'Motorcycle Courier', salary: 16000 },
@@ -91,8 +89,8 @@ const jobsList: Job[] = [
 ];
 
 const realEstateList: Housing[] = [
-  { id: 'kyk', type: 'rent', name: { tr: 'KYK Yurdu', en: 'KYK Dorm' }, price: 850 },
-  { id: 'shared', type: 'rent', name: { tr: 'Paylaşımlı Öğrenci Evi', en: 'Shared Flat' }, price: 4500 },
+  { id: 'kyk', type: 'rent', name: { tr: 'Ucuz Pansiyon', en: 'Cheap Hostel' }, price: 850 },
+  { id: 'shared', type: 'rent', name: { tr: 'Paylaşımlı Ev', en: 'Shared Flat' }, price: 4500 },
   { id: 'studio', type: 'rent', name: { tr: '1+0 Stüdyo Daire', en: 'Studio Apartment' }, price: 12000 },
   { id: 'house1', type: 'owned', name: { tr: 'Şehir Dışında Eski Ev', en: 'Old House Suburbs' }, price: 1500000 },
   { id: 'house2', type: 'owned', name: { tr: 'Merkezde 2+1 Daire', en: '2+1 City Center' }, price: 4500000 },
@@ -105,18 +103,18 @@ const shopItems: ShopItem[] = [
   { id: 'tshirt', category: 'clothes', name: { tr: 'Marka Tişört', en: 'Branded T-Shirt' }, cost: 800, effect: { happiness: 5 }, consumable: false },
   { id: 'sneakers', category: 'clothes', name: { tr: 'Spor Ayakkabı', en: 'Sneakers' }, cost: 3500, effect: { happiness: 10, energy: 5 }, consumable: false },
   { id: 'phone', category: 'tech', name: { tr: 'Akıllı Telefon', en: 'Smartphone' }, cost: 45000, effect: { happiness: 25 }, consumable: false },
-  { id: 'laptop', category: 'tech', name: { tr: 'Oyun Bilgisayarı', en: 'Gaming Laptop' }, cost: 65000, effect: { happiness: 30, gpa: 0.2 }, consumable: false }
+  { id: 'laptop', category: 'tech', name: { tr: 'Oyun Bilgisayarı', en: 'Gaming Laptop' }, cost: 65000, effect: { happiness: 30 }, consumable: false }
 ];
 
 const randomEventsList: GameEvent[] = [
   {
     title: { tr: 'Şanslı Gün!', en: 'Lucky Day!' },
     description: { tr: 'Yerde 500₺ buldun.', en: 'You found 500₺ on the ground.' },
-    effect: (p) => ({ ...p, money: p.money + 500, happiness: Math.min(100, p.happiness + 10) })
+    effect: (p) => ({ ...p, money: p.money + 500, happiness: Math.min(10000, p.happiness + 10) })
   },
   {
-    title: { tr: 'Trafik Çilesi', en: 'Traffic Jam' },
-    description: { tr: 'Otobüsü kaçırdın, koşman gerekti.', en: 'You missed the bus and had to run.' },
+    title: { tr: 'Polis Çevirmesi', en: 'Police Checkpoint' },
+    description: { tr: 'Kimlik kontrolüne takıldın, vakit kaybettin.', en: 'Got stopped for an ID check, lost time.' },
     effect: (p) => ({ ...p, energy: Math.max(0, p.energy - 20), happiness: Math.max(0, p.happiness - 10) })
   },
   {
@@ -127,33 +125,33 @@ const randomEventsList: GameEvent[] = [
   {
     title: { tr: 'Sokak Kedisi', en: 'Street Cat' },
     description: { tr: 'Tatlı bir sokak kedisini sevdin.', en: 'You petted a cute street cat.' },
-    effect: (p) => ({ ...p, happiness: Math.min(100, p.happiness + 15) })
+    effect: (p) => ({ ...p, happiness: Math.min(10000, p.happiness + 15) })
   }
 ];
 
 const cityMap: TileType[][] = [
   ['house', 'road', 'shop', 'road', 'estate', 'grass'],
   ['grass', 'road', 'road', 'road', 'cafe', 'road'],
-  ['school', 'road', 'mosque', 'road', 'office', 'road'],
+  ['club', 'road', 'mosque', 'road', 'office', 'road'],
   ['hospital', 'road', 'gym', 'road', 'airport', 'grass'],
 ];
 
 const tileIcons: Record<TileType, string> = {
   road: '🛣️', grass: '🌳', house: '🏠', shop: '🛒', 
-  school: '📚', mosque: '🕌', hospital: '🏥', office: '💼', 
+  club: '🪩', mosque: '🕌', hospital: '🏥', office: '💼', 
   estate: '🏢', airport: '✈️', cafe: '☕', gym: '🏋️'
 };
 
 const tileColors: Record<TileType, string> = {
   road: 'bg-slate-700', grass: 'bg-emerald-800', house: 'bg-sky-700', shop: 'bg-amber-600', 
-  school: 'bg-purple-700', mosque: 'bg-indigo-700', hospital: 'bg-rose-700', office: 'bg-blue-600', 
+  club: 'bg-fuchsia-700', mosque: 'bg-indigo-700', hospital: 'bg-rose-700', office: 'bg-blue-600', 
   estate: 'bg-teal-700', airport: 'bg-zinc-600', cafe: 'bg-orange-700', gym: 'bg-red-800'
 };
 
 const tileNames: Record<TileType, LocalizedText> = {
   road: { tr: 'Sokak', en: 'Street' }, grass: { tr: 'Park', en: 'Park' },
   house: { tr: 'Evim', en: 'My Home' }, shop: { tr: 'Market', en: 'Shop' },
-  school: { tr: 'Üniversite', en: 'University' }, mosque: { tr: 'Cami', en: 'Mosque' },
+  club: { tr: 'Gece Kulübü', en: 'Nightclub' }, mosque: { tr: 'Cami', en: 'Mosque' },
   hospital: { tr: 'Hastane', en: 'Hospital' }, office: { tr: 'İş Merkezi', en: 'Offices' },
   estate: { tr: 'Emlakçı', en: 'Real Estate' }, airport: { tr: 'Havalimanı', en: 'Airport' },
   cafe: { tr: 'Kafe', en: 'Cafe' }, gym: { tr: 'Spor Salonu', en: 'Gym' }
@@ -169,7 +167,7 @@ export default function GameHome() {
   const [saveStatus, setSaveStatus] = useState<string>('');
   
   const [player, setPlayer] = useState<PlayerStats>({
-    money: 5000, health: 80, happiness: 75, energy: 100, gpa: 2.50, faith: 50,
+    money: 5000000, health: 10000, happiness: 10000, energy: 10000, faith: 50,
     location: 'Istanbul', job: jobsList[0],
     housing: { tr: 'Aile Evi', en: 'Family House', rent: 0, type: 'rent' },
     inventory: [], x: 0, y: 0
@@ -179,9 +177,8 @@ export default function GameHome() {
     setLogs((prev) => [msg, ...prev].slice(0, 5)); 
   };
 
-  const clamp = (val: number, min = 0, max = 100) => Math.max(min, Math.min(max, val));
+  const clamp = (val: number, min = 0, max = 10000) => Math.max(min, Math.min(max, val));
 
-  // --- Supabase Save/Load Logic ---
   const saveGame = async () => {
     if (!supabase) {
       setSaveStatus(lang === 'tr' ? 'Veritabanı bağlantısı yok.' : 'Database not connected.');
@@ -248,15 +245,14 @@ export default function GameHome() {
 
     switch (tile) {
       case 'house':
-        p.energy = 100;
+        p.energy = 10000;
         p.health = clamp(p.health + 10);
         msg = lang === 'tr' ? 'Eve geldin ve uyudun. Enerjin doldu.' : 'Went home and slept. Energy restored.';
         break;
-      case 'school':
-        p.gpa = Math.min(4.0, p.gpa + 0.1);
-        p.energy -= 15;
-        p.happiness -= 5;
-        msg = lang === 'tr' ? 'Derse girdin. (GPA +, Enerji -)' : 'Attended class. (GPA +, Energy -)';
+      case 'club':
+        p.happiness = clamp(p.happiness + 50);
+        p.energy -= 20;
+        msg = lang === 'tr' ? 'Partiledin! Paranoyayı attın.' : 'Partied hard! Stress gone.';
         break;
       case 'mosque':
         p.faith = clamp(p.faith + 20);
@@ -266,7 +262,7 @@ export default function GameHome() {
       case 'hospital':
         if (p.money >= 500) {
           p.money -= 500;
-          p.health = 100;
+          p.health = 10000;
           msg = lang === 'tr' ? 'Tedavi oldun (-500₺).' : 'Got treated (-500₺).';
         } else {
           msg = lang === 'tr' ? 'Hastane için paran yok!' : 'Cannot afford the hospital!';
@@ -309,7 +305,7 @@ export default function GameHome() {
         p = checkRandomEvent(p);
         break;
       case 'road':
-        msg = lang === 'tr' ? 'Yürüyorsun...' : 'Walking...';
+        msg = lang === 'tr' ? 'Sokaklarda turluyorsun...' : 'Cruising the streets...';
         p = checkRandomEvent(p);
         break;
     }
@@ -342,7 +338,6 @@ export default function GameHome() {
       p.money -= item.cost;
       if (!item.consumable) {
         if (item.effect.happiness) p.happiness = clamp(p.happiness + item.effect.happiness);
-        if (item.effect.gpa) p.gpa = Math.min(4.0, p.gpa + item.effect.gpa);
       }
       p.inventory.push(item);
       setPlayer(p);
@@ -385,7 +380,7 @@ export default function GameHome() {
     let p = { ...player };
     p.money += p.job.salary;
     if (p.housing.type === 'rent') p.money -= p.housing.rent;
-    p.energy = 100; 
+    p.energy = 10000; 
     setPlayer(p);
     addLog(lang === 'tr' ? 'Maaş yattı, kiralar ödendi.' : 'Salary paid, rent collected.');
   };
@@ -416,26 +411,22 @@ export default function GameHome() {
           </div>
         </div>
 
-        <div className="max-w-5xl mx-auto grid grid-cols-5 gap-2 text-center text-[10px] md:text-xs">
+        <div className="max-w-5xl mx-auto grid grid-cols-4 gap-2 text-center text-[10px] md:text-xs">
           <div className="bg-slate-950 p-2 rounded-lg border border-slate-800 flex flex-col justify-center">
             <span className="text-slate-500 font-bold uppercase mb-1">{lang === 'tr' ? 'Cüzdan' : 'Wallet'}</span>
             <span className={`font-black text-sm md:text-base ${player.money < 0 ? 'text-red-500' : 'text-emerald-400'}`}>{player.money.toLocaleString()}₺</span>
           </div>
           <div className="bg-slate-950 p-2 rounded-lg border border-slate-800 flex flex-col justify-center">
             <span className="text-rose-500 font-bold uppercase mb-1">HP</span>
-            <span className="font-black text-white">{player.health}%</span>
+            <span className="font-black text-white">{player.health.toLocaleString()}</span>
           </div>
           <div className="bg-slate-950 p-2 rounded-lg border border-slate-800 flex flex-col justify-center">
             <span className="text-amber-500 font-bold uppercase mb-1">ENG</span>
-            <span className="font-black text-white">{player.energy}%</span>
-          </div>
-          <div className="bg-slate-950 p-2 rounded-lg border border-slate-800 flex flex-col justify-center">
-            <span className="text-purple-400 font-bold uppercase mb-1">GPA</span>
-            <span className="font-black text-white">{player.gpa.toFixed(2)}</span>
+            <span className="font-black text-white">{player.energy.toLocaleString()}</span>
           </div>
           <div className="bg-slate-950 p-2 rounded-lg border border-slate-800 flex flex-col justify-center">
             <span className="text-indigo-400 font-bold uppercase mb-1">FAI</span>
-            <span className="font-black text-white">{player.faith}%</span>
+            <span className="font-black text-white">{player.faith.toLocaleString()}</span>
           </div>
         </div>
       </header>
