@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls, Text } from '@react-three/drei';
 import { createClient } from '@supabase/supabase-js';
 import ChatModal from './ChatModal';
 import Onboarding from './Onboarding';
@@ -13,43 +13,78 @@ const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supaba
 
 type Tab = 'home' | 'map' | 'phone';
 
-function CityWorldMap({ currentLocation, onSelectLocation }: { currentLocation: string, onSelectLocation: (id: string) => void }) {
+function ImmersiveCityMap({ currentLocation, onSelectLocation }: { currentLocation: string, onSelectLocation: (id: string) => void }) {
   return (
     <group position={[0, -1, 0]}>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-        <planeGeometry args={[30, 30]} />
-        <meshStandardMaterial color="#cbd5e1" />
+      {/* Asphalt Ground */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]}>
+        <planeGeometry args={[40, 40]} />
+        <meshStandardMaterial color="#1e293b" />
       </mesh>
 
-      <group position={[-3, 0, -3]} onClick={() => onSelectLocation('kadikoy')}>
-        <mesh position={[0, 0.5, 0]}>
-          <boxGeometry args={[3, 1, 3]} />
-          <meshStandardMaterial color={currentLocation === 'kadikoy' ? '#dc2626' : '#3b82f6'} />
+      {/* Cross Roads / Streets */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+        <planeGeometry args={[36, 4]} />
+        <meshStandardMaterial color="#334155" />
+      </mesh>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+        <planeGeometry args={[4, 36]} />
+        <meshStandardMaterial color="#334155" />
+      </mesh>
+
+      {/* DISTRICT 1: KADIKÖY SAHİL (Blue Theme / Waterfront) */}
+      <group position={[-5, 0, -5]} onClick={() => onSelectLocation('kadikoy')}>
+        {/* Building Base */}
+        <mesh position={[0, 1, 0]}>
+          <boxGeometry args={[3.5, 2, 3.5]} />
+          <meshStandardMaterial color={currentLocation === 'kadikoy' ? '#dc2626' : '#2563eb'} />
+        </mesh>
+        {/* Storefront Windows */}
+        <mesh position={[0, 0.5, 1.8]}>
+          <boxGeometry args={[2.5, 0.8, 0.1]} />
+          <meshStandardMaterial color="#93c5fd" emissive="#3b82f6" emissiveIntensity={0.5} />
+        </mesh>
+        <mesh position={[0, 2.2, 0]}>
+          <coneGeometry args={[2.5, 1, 4]} />
+          <meshStandardMaterial color="#1d4ed8" />
         </mesh>
       </group>
 
-      <group position={[3, 0, -3]} onClick={() => onSelectLocation('kizilay')}>
-        <mesh position={[0, 0.7, 0]}>
-          <boxGeometry args={[3, 1.4, 3]} />
-          <meshStandardMaterial color={currentLocation === 'kizilay' ? '#dc2626' : '#f59e0b'} />
-        </mesh>
+      {/* DISTRICT 2: KIZILAY MEYDANI (Ankara Center + Custom Billboard) */}
+      <group position={[5, 0, -5]} onClick={() => onSelectLocation('kizilay')}>
+        {/* Modern Tower */}
         <mesh position={[0, 1.8, 0]}>
-          <boxGeometry args={[2.2, 0.8, 0.2]} />
-          <meshStandardMaterial color="#111827" />
+          <boxGeometry args={[3, 3.6, 3]} />
+          <meshStandardMaterial color={currentLocation === 'kizilay' ? '#dc2626' : '#d97706'} />
+        </mesh>
+        {/* Glowing Custom Billboard */}
+        <mesh position={[0, 3.2, 1.55]}>
+          <boxGeometry args={[2.6, 1, 0.2]} />
+          <meshStandardMaterial color="#000000" emissive="#f59e0b" emissiveIntensity={1} />
         </mesh>
       </group>
 
-      <group position={[-3, 0, 3]} onClick={() => onSelectLocation('besiktas')}>
-        <mesh position={[0, 0.6, 0]}>
-          <boxGeometry args={[3, 1.2, 3]} />
-          <meshStandardMaterial color={currentLocation === 'besiktas' ? '#dc2626' : '#10b981'} />
+      {/* DISTRICT 3: BEŞİKTAŞ ÇARŞI */}
+      <group position={[-5, 0, 5]} onClick={() => onSelectLocation('besiktas')}>
+        <mesh position={[0, 1.2, 0]}>
+          <boxGeometry args={[3.5, 2.4, 3.5]} />
+          <meshStandardMaterial color={currentLocation === 'besiktas' ? '#dc2626' : '#059669'} />
+        </mesh>
+        <mesh position={[0, 0.6, 1.8]}>
+          <boxGeometry args={[2.5, 0.8, 0.1]} />
+          <meshStandardMaterial color="#6ee7b7" emissive="#10b981" emissiveIntensity={0.5} />
         </mesh>
       </group>
 
-      <group position={[3, 0, 3]} onClick={() => onSelectLocation('bagcilar')}>
-        <mesh position={[0, 0.4, 0]}>
-          <boxGeometry args={[3, 0.8, 3]} />
-          <meshStandardMaterial color={currentLocation === 'bagcilar' ? '#dc2626' : '#64748b'} />
+      {/* DISTRICT 4: BAĞCILAR SOKAK */}
+      <group position={[5, 0, 5]} onClick={() => onSelectLocation('bagcilar')}>
+        <mesh position={[0, 0.8, 0]}>
+          <boxGeometry args={[3.5, 1.6, 3.5]} />
+          <meshStandardMaterial color={currentLocation === 'bagcilar' ? '#dc2626' : '#475569'} />
+        </mesh>
+        <mesh position={[0, 0.4, 1.8]}>
+          <boxGeometry args={[2.5, 0.6, 0.1]} />
+          <meshStandardMaterial color="#cbd5e1" />
         </mesh>
       </group>
     </group>
@@ -78,26 +113,26 @@ export default function GameHome() {
       eatFood: 'Eat Döner',
       eatDesc: 'Satisfy hunger & gain energy',
       homeTab: 'Home',
-      mapTab: '3D Map',
+      mapTab: '3D City',
       phoneTab: 'Phone',
       rentLabel: 'Rent',
       week: 'week',
       health: 'Health',
       energy: 'Energy',
-      transitBtn: 'Take İETT Bus / Dolmuş (15 ₺)'
+      travelPrompt: 'Click any 3D building to travel & inspect billboards'
     },
     tr: {
       activeLocation: 'AKTİF BÖLGE',
       eatFood: 'Döner Ye',
       eatDesc: 'Açlığını gider, enerji topla',
       homeTab: 'Ev',
-      mapTab: '3D Harita',
+      mapTab: '3D Şehir',
       phoneTab: 'Telefon',
       rentLabel: 'Kira',
       week: 'hafta',
       health: 'Sağlık',
       energy: 'Enerji',
-      transitBtn: 'İETT Otobüsü / Dolmuşuna Bin (15 ₺)'
+      travelPrompt: 'Seyahat etmek ve tabelaları görmek için binalara tıkla'
     }
   };
 
@@ -128,16 +163,8 @@ export default function GameHome() {
     );
   }
 
-  const travelWithTransit = (id: string) => {
-    if (player.money < 15) {
-      alert("Yetersiz bakiye! (Insufficient funds for transit)");
-      return;
-    }
-    setPlayer(p => ({
-      ...p,
-      money: p.money - 15,
-      location: id
-    }));
+  const travelToDistrict = (id: string) => {
+    setPlayer(p => ({ ...p, location: id }));
   };
 
   const getMood = () => {
@@ -150,7 +177,7 @@ export default function GameHome() {
   const currentLocation = locations.find(l => l.id === player.location) || locations[0];
 
   return (
-    <main className="min-h-screen bg-[#f0f4f8] text-slate-800 flex flex-col font-sans overflow-hidden relative">
+    <main className="min-h-screen bg-[#0f172a] text-slate-800 flex flex-col font-sans overflow-hidden relative">
       
       {/* FLOATING TOP STATUS BAR */}
       <header className="fixed top-4 left-1/2 -translate-x-1/2 z-40 w-[95%] max-w-4xl flex justify-between items-center pointer-events-none">
@@ -182,40 +209,41 @@ export default function GameHome() {
         </div>
       </div>
 
-      {/* MAIN CONTENT AREA: 3D WORLD MAP & TRANSIT */}
+      {/* MAIN CONTENT AREA: IMMERSIVE 3D CITY VIEWPORT */}
       <div className="flex-1 w-full h-full flex items-center justify-center p-4 pt-24 pb-32">
         {activeTab === 'map' && (
-          <div className="bg-white/90 backdrop-blur-md p-6 rounded-[3rem] shadow-xl border border-white max-w-3xl w-full flex flex-col items-center">
-            <div className="text-center mb-4">
+          <div className="bg-white/95 backdrop-blur-xl p-6 rounded-[3rem] shadow-2xl border border-white/20 max-w-4xl w-full flex flex-col items-center">
+            <div className="text-center mb-3">
               <span className="bg-red-100 text-red-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">{t.activeLocation}</span>
               <h2 className="text-2xl font-black text-slate-800 mt-1">{currentLocation.name}</h2>
               <p className="text-xs text-slate-500">{currentLocation.desc[language]}</p>
             </div>
 
-            {/* Interactive 3D Canvas Viewport */}
-            <div className="w-full h-60 bg-gradient-to-b from-slate-900 to-slate-800 rounded-3xl overflow-hidden shadow-inner border-4 border-white relative mb-4">
-              <Canvas camera={{ position: [5, 5, 5], fov: 60 }}>
-                <ambientLight intensity={0.8} />
-                <directionalLight position={[10, 20, 10]} intensity={1.5} />
-                <CityWorldMap currentLocation={player.location} onSelectLocation={(id) => travelWithTransit(id)} />
+            {/* Immersive 3D Street Canvas */}
+            <div className="w-full h-96 bg-gradient-to-b from-slate-950 to-slate-900 rounded-3xl overflow-hidden shadow-2xl border-4 border-slate-200 relative mb-4">
+              <Canvas camera={{ position: [8, 8, 8], fov: 50 }}>
+                <ambientLight intensity={0.9} />
+                <directionalLight position={[10, 25, 10]} intensity={1.8} />
+                <ImmersiveCityMap currentLocation={player.location} onSelectLocation={(id) => travelToDistrict(id)} />
                 <OrbitControls enableZoom={true} enablePan={true} maxPolarAngle={Math.PI / 2.2} />
               </Canvas>
-              <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md text-white text-[10px] px-3 py-1 rounded-full pointer-events-none">
-                🚌 {t.transitBtn}
+              <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-md text-white text-[11px] font-semibold px-4 py-2 rounded-xl shadow-lg border border-white/10 pointer-events-none flex items-center gap-2">
+                🏙️ {t.travelPrompt}
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 w-full">
+            {/* District Quick Switcher */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full">
               {locations.map(loc => (
                 <button
                   key={loc.id}
-                  onClick={() => travelWithTransit(loc.id)}
-                  className={`p-3 rounded-2xl border-2 transition-all flex items-center gap-3 text-left ${player.location === loc.id ? 'border-red-600 bg-red-50 shadow-sm' : 'border-slate-100 bg-white hover:border-slate-300'}`}
+                  onClick={() => travelToDistrict(loc.id)}
+                  className={`p-3.5 rounded-2xl border-2 transition-all flex items-center gap-3 text-left ${player.location === loc.id ? 'border-red-600 bg-red-50 shadow-md scale-[1.02]' : 'border-slate-100 bg-white hover:border-slate-300'}`}
                 >
                   <span className="text-2xl">{loc.icon}</span>
                   <div>
                     <h3 className="font-bold text-slate-800 text-xs">{loc.name}</h3>
-                    <p className="text-[9px] text-slate-500">15 ₺ Transit</p>
+                    <p className="text-[9px] text-slate-500">{loc.district}</p>
                   </div>
                 </button>
               ))}
@@ -224,8 +252,8 @@ export default function GameHome() {
         )}
 
         {activeTab === 'home' && (
-          <div className="bg-white/80 backdrop-blur-md p-8 rounded-[3rem] shadow-xl border border-white max-w-lg w-full text-center">
-            <div className="w-20 h-20 bg-red-600 rounded-3xl mx-auto flex items-center justify-center text-4xl shadow-lg mb-4">🏠</div>
+          <div className="bg-white/90 backdrop-blur-xl p-8 rounded-[3rem] shadow-2xl border border-white/20 max-w-lg w-full text-center">
+            <div className="w-20 h-20 bg-red-600 rounded-3xl mx-auto flex items-center justify-center text-4xl shadow-lg mb-4 text-white">🏠</div>
             <h2 className="text-2xl font-black text-slate-800">{language === 'en' ? 'Residence' : 'Ev Sahnesi'}</h2>
             <p className="text-xs text-slate-500 mt-1">{t.rentLabel}: {player.rent.toLocaleString()} ₺ / {t.week}</p>
             <div className="mt-6 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-left space-y-2">
