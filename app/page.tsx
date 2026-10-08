@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
-import * as THREE from 'three';
+import dynamic from 'next/dynamic';
+import { useFrame } from '@react-three/fiber';
 import { createClient } from '@supabase/supabase-js';
 import ChatModal from './ChatModal';
 import Onboarding from './Onboarding';
@@ -34,13 +33,11 @@ function RealisticDistrictBuilding({ position, primaryColor, height, name, isSel
       onPointerOver={() => setHovered(true)}
       onPointerOut={() => setHovered(false)}
     >
-      {/* Ground Floor Retail / Storefront */}
       <mesh position={[0, 0.8, 0]}>
         <boxGeometry args={[4.2, 1.6, 4.2]} />
         <meshStandardMaterial color="#0f172a" roughness={0.2} metalness={0.8} />
       </mesh>
 
-      {/* Storefront Glass Windows (Glowing Cyan) */}
       <mesh position={[0, 0.8, 2.11]}>
         <boxGeometry args={[3.6, 1.0, 0.1]} />
         <meshStandardMaterial color="#38bdf8" emissive="#0284c7" emissiveIntensity={1} />
@@ -50,13 +47,11 @@ function RealisticDistrictBuilding({ position, primaryColor, height, name, isSel
         <meshStandardMaterial color="#38bdf8" emissive="#0284c7" emissiveIntensity={1} />
       </mesh>
 
-      {/* Main Tower Body */}
       <mesh position={[0, 1.6 + (height / 2), 0]}>
         <boxGeometry args={[3.8, height, 3.8]} />
         <meshStandardMaterial color={isSelected ? '#dc2626' : primaryColor} roughness={0.3} metalness={0.4} />
       </mesh>
 
-      {/* Architectural Window Panels */}
       <mesh position={[0, 1.6 + (height / 2), 1.91]}>
         <boxGeometry args={[2.8, height * 0.7, 0.1]} />
         <meshStandardMaterial color="#fef08a" emissive="#eab308" emissiveIntensity={0.6} />
@@ -66,13 +61,11 @@ function RealisticDistrictBuilding({ position, primaryColor, height, name, isSel
         <meshStandardMaterial color="#fef08a" emissive="#eab308" emissiveIntensity={0.6} />
       </mesh>
 
-      {/* Rooftop Structure / Penthouse */}
       <mesh position={[0, 1.6 + height + 0.4, 0]}>
         <boxGeometry args={[3.0, 0.8, 3.0]} />
         <meshStandardMaterial color="#1e293b" roughness={0.5} />
       </mesh>
 
-      {/* Glowing Billboard / Signage Header */}
       <mesh position={[0, 1.6 + height + 1.1, 1.6]}>
         <boxGeometry args={[3.2, 0.8, 0.3]} />
         <meshStandardMaterial color="#000000" emissive="#f43f5e" emissiveIntensity={1.5} />
@@ -84,13 +77,11 @@ function RealisticDistrictBuilding({ position, primaryColor, height, name, isSel
 function LagosLifeCityEngine({ currentLocation, onSelectLocation }: { currentLocation: string, onSelectLocation: (id: string) => void }) {
   return (
     <group position={[0, -1.5, 0]}>
-      {/* Dark Asphalt Ground */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
         <planeGeometry args={[80, 80]} />
         <meshStandardMaterial color="#050811" roughness={0.9} />
       </mesh>
 
-      {/* Multi-Lane City Roads */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
         <planeGeometry args={[72, 8]} />
         <meshStandardMaterial color="#111827" roughness={0.8} />
@@ -100,7 +91,6 @@ function LagosLifeCityEngine({ currentLocation, onSelectLocation }: { currentLoc
         <meshStandardMaterial color="#111827" roughness={0.8} />
       </mesh>
 
-      {/* Glowing Road Center Dividers */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]}>
         <planeGeometry args={[70, 0.3]} />
         <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={1} />
@@ -110,7 +100,6 @@ function LagosLifeCityEngine({ currentLocation, onSelectLocation }: { currentLoc
         <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={1} />
       </mesh>
 
-      {/* Kadıköy District (Waterfront Blue) */}
       <RealisticDistrictBuilding 
         position={[-8, 0, -8]} 
         primaryColor="#2563eb" 
@@ -120,7 +109,6 @@ function LagosLifeCityEngine({ currentLocation, onSelectLocation }: { currentLoc
         onClick={() => onSelectLocation('kadikoy')} 
       />
 
-      {/* Kızılay Square (Ankara Center / Billboard Hub) */}
       <RealisticDistrictBuilding 
         position={[8, 0, -8]} 
         primaryColor="#d97706" 
@@ -130,7 +118,6 @@ function LagosLifeCityEngine({ currentLocation, onSelectLocation }: { currentLoc
         onClick={() => onSelectLocation('kizilay')} 
       />
 
-      {/* Beşiktaş Çarşı (Culture & Nightlife) */}
       <RealisticDistrictBuilding 
         position={[-8, 0, 8]} 
         primaryColor="#059669" 
@@ -140,7 +127,6 @@ function LagosLifeCityEngine({ currentLocation, onSelectLocation }: { currentLoc
         onClick={() => onSelectLocation('besiktas')} 
       />
 
-      {/* Bağcılar Sokak (Hard Hustle Zone) */}
       <RealisticDistrictBuilding 
         position={[8, 0, 8]} 
         primaryColor="#475569" 
@@ -152,6 +138,21 @@ function LagosLifeCityEngine({ currentLocation, onSelectLocation }: { currentLoc
     </group>
   );
 }
+
+const SafeCanvas = dynamic(
+  () => import('@react-three/fiber').then((mod) => {
+    const { Canvas } = mod;
+    return function Component({ children }: any) {
+      return <Canvas camera={{ position: [14, 14, 14], fov: 40 }}>{children}</Canvas>;
+    };
+  }),
+  { ssr: false }
+);
+
+const SafeOrbitControls = dynamic(
+  () => import('@react-three/drei').then((mod) => mod.OrbitControls),
+  { ssr: false }
+);
 
 export default function GameHome() {
   const [activeTab, setActiveTab] = useState<Tab>('map');
@@ -279,12 +280,12 @@ export default function GameHome() {
             </div>
 
             <div className="w-full h-[420px] bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 rounded-3xl overflow-hidden shadow-2xl border-4 border-slate-200 relative mb-4">
-              <Canvas camera={{ position: [14, 14, 14], fov: 40 }}>
+              <SafeCanvas>
                 <ambientLight intensity={1.4} />
                 <directionalLight position={[25, 40, 25]} intensity={2.5} />
                 <LagosLifeCityEngine currentLocation={player.location} onSelectLocation={(id) => travelToDistrict(id)} />
-                <OrbitControls enableZoom={true} enablePan={true} maxPolarAngle={Math.PI / 2.2} />
-              </Canvas>
+                <SafeOrbitControls enableZoom={true} enablePan={true} maxPolarAngle={Math.PI / 2.2} />
+              </SafeCanvas>
               <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-md text-white text-[11px] font-semibold px-4 py-2 rounded-xl shadow-lg border border-white/10 pointer-events-none flex items-center gap-2">
                 🏙️ {t.travelPrompt}
               </div>
