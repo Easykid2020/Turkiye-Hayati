@@ -10,10 +10,13 @@ interface Message {
   amount?: number;
 }
 
-export default function ChatModal({ onClose, updateWallet, updateEnergy }: any) {
+export default function ChatModal({ onClose, updateWallet, updateEnergy, playerData }: any) {
+  const [activeApp, setActiveApp] = useState<'home' | 'messages' | 'bank'>('home');
+  
+  // Chat State
   const [npc] = useState(generateRandomNPC());
   const [messages, setMessages] = useState<Message[]>([
-    { id: 1, sender: 'npc', text: `Yo, what's up?` }
+    { id: 1, sender: 'npc', text: `Ne haber?` }
   ]);
   const [isTyping, setIsTyping] = useState(false);
   const [interactionDone, setInteractionDone] = useState(false);
@@ -29,8 +32,10 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy }: any) 
   }
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping]);
+    if (activeApp === 'messages') {
+      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isTyping, activeApp]);
 
   const addMessage = (sender: 'me' | 'npc', text: string, isTransfer = false, amount = 0) => {
     setMessages(prev => [...prev, { id: Date.now(), sender, text, isTransfer, amount }]);
@@ -42,50 +47,50 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy }: any) 
     const roll = Math.random();
 
     if (actionType === "friendly") {
-      addMessage('me', 'Just checking in, how are things?');
+      addMessage('me', 'Nasılsın, her şey yolunda mı?');
       setIsTyping(true);
       setTimeout(() => {
         setIsTyping(false);
-        addMessage('npc', 'Doing great! Let’s grab food later.');
+        addMessage('npc', 'İyidir! Sonra bir kahve içelim.');
         updateEnergy(-5);
       }, 1500);
     } 
     
     else if (actionType === "bill") {
-      addMessage('me', 'Bro I’m stranded right now, can you send something urgent?');
+      addMessage('me', 'Kanka acil paraya sıkıştım, biraz ateşleyebilir misin?');
       setIsTyping(true);
       setTimeout(() => {
         if (roll > 0.4) {
-          addMessage('npc', 'Send IBAN fast.');
+          addMessage('npc', 'IBAN at hemen.');
           setTimeout(() => {
             addMessage('me', 'TR12 0001 0000 1234 5678 9012 34 Ziraat Bankası');
             setTimeout(() => {
               setIsTyping(false);
               const moneyChange = npc.wealth === "Loaded" ? 150000 : 25000;
-              addMessage('npc', 'Done.', true, moneyChange);
+              addMessage('npc', 'Hallettim.', true, moneyChange);
               updateWallet(moneyChange);
             }, 1500);
           }, 1000);
         } else {
           setIsTyping(false);
-          addMessage('npc', 'I don’t have it bro, maybe tomorrow.');
+          addMessage('npc', 'Bende de kalmadı kanka ya, yarına bakarım.');
         }
         updateEnergy(energyChange);
       }, 1500);
     } 
     
     else if (actionType === "scam") {
-      addMessage('me', 'I have a guaranteed 5x return investment for you today only.');
+      addMessage('me', 'Elimde bugünlük garantili %500 getiri sağlayan bir borsa tüyosu var.');
       setIsTyping(true);
       setTimeout(() => {
         if (roll > 0.65) {
           setIsTyping(false);
           const moneyChange = 500000;
-          addMessage('npc', 'I trust you. Sending it now.', true, moneyChange);
+          addMessage('npc', 'Sana güveniyorum. Gönderdim.', true, moneyChange);
           updateWallet(moneyChange);
         } else {
           setIsTyping(false);
-          addMessage('npc', 'Are you crazy? I’m calling the police.');
+          addMessage('npc', 'Deli misin sen? Polisi arıyorum.');
           updateWallet(-50000); 
         }
         updateEnergy(energyChange);
@@ -96,7 +101,7 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy }: any) 
   return (
     <div className="fixed inset-0 bg-slate-900/80 flex items-center justify-center z-[100] p-4 backdrop-blur-sm">
       
-      {/* HARD-CODED IPHONE DIMENSIONS - Will not stretch on small screens */}
+      {/* HARD-CODED IPHONE DIMENSIONS */}
       <div className="bg-black border-[12px] border-slate-800 rounded-[3rem] shadow-2xl relative w-[350px] h-[700px] flex flex-col overflow-hidden">
         
         {/* Dynamic Island Notch */}
@@ -105,7 +110,7 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy }: any) 
         </div>
 
         {/* iOS Status Bar */}
-        <div className="absolute top-0 w-full h-10 z-40 flex justify-between items-center px-5 text-white text-[11px] font-bold pt-1">
+        <div className="absolute top-0 w-full h-10 z-40 flex justify-between items-center px-5 text-white text-[11px] font-bold pt-1 pointer-events-none">
           <span>10:49</span>
           <div className="flex items-center gap-1">
             <span className="text-[10px]">5G</span>
@@ -113,96 +118,177 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy }: any) 
           </div>
         </div>
 
-        {/* iMessage Header */}
-        <div className="bg-slate-900/90 pt-12 pb-3 px-4 flex items-center gap-3 border-b border-slate-800 z-30">
-          <button onClick={onClose} className="text-blue-500 text-3xl font-light mb-1 hover:text-blue-400 leading-none">‹</button>
-          <div className="w-9 h-9 rounded-full bg-slate-600 flex items-center justify-center text-lg shadow-sm">👤</div>
-          <div className="flex flex-col justify-center">
-            <h2 className="text-white font-medium text-[14px] leading-tight">{npc.name} ❯</h2>
-            <p className="text-slate-400 text-[10px]">iMessage</p>
-          </div>
-        </div>
-
-        {/* Chat Canvas */}
-        <div className="flex-1 bg-black overflow-y-auto p-4 flex flex-col gap-2 custom-scrollbar pb-4">
-          <p className="text-center text-slate-500 text-[10px] font-medium mb-3 uppercase tracking-widest mt-2">Today 10:49 AM</p>
-          
-          {messages.map((msg, index) => {
-            const isMe = msg.sender === 'me';
-            const showTail = index === messages.length - 1 || messages[index + 1]?.sender !== msg.sender;
-            
-            return (
-              <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] px-4 py-2 text-[14px] leading-snug relative shadow-sm ${
-                  isMe 
-                    ? `bg-blue-600 text-white rounded-2xl ${showTail ? 'rounded-br-sm' : ''}` 
-                    : `bg-slate-800 text-white rounded-2xl ${showTail ? 'rounded-bl-sm' : ''}`
-                }`}>
-                  {msg.text}
+        {/* ======================= */}
+        {/* APP 1: HOME SCREEN      */}
+        {/* ======================= */}
+        {activeApp === 'home' && (
+          <div className="flex-1 bg-gradient-to-b from-indigo-900 to-black w-full h-full flex flex-col relative pt-16 px-6">
+             <div className="grid grid-cols-4 gap-4 mt-8">
+                {/* Messages App Icon */}
+                <div onClick={() => setActiveApp('messages')} className="flex flex-col items-center gap-1 cursor-pointer hover:scale-105 transition-transform">
+                   <div className="w-14 h-14 bg-emerald-500 rounded-2xl flex items-center justify-center shadow-lg">
+                      <span className="text-white text-3xl">💬</span>
+                   </div>
+                   <span className="text-white text-[10px] font-medium">Messages</span>
                 </div>
-              </div>
-            );
-          })}
 
-          {/* Ziraat Bank Transfer Receipt */}
-          {messages.filter(m => m.isTransfer).map(msg => (
-             <div key={`receipt-${msg.id}`} className="flex justify-start mt-2 mb-2">
-               <div className="bg-slate-900 border border-slate-700 rounded-2xl p-3.5 w-60 shadow-lg flex flex-col gap-2">
-                 <div className="flex items-center gap-3">
-                    <div className="bg-red-600 rounded-full w-8 h-8 flex items-center justify-center text-white font-black text-lg font-serif border border-red-500 shadow-inner">Z</div>
-                    <div className="flex-1">
-                      <p className="text-white font-semibold text-[12px] leading-tight">Ziraat Mobil</p>
-                      <p className="text-emerald-400 font-medium text-[10px]">Transfer Başarılı ✔</p>
+                {/* Ziraat App Icon */}
+                <div onClick={() => setActiveApp('bank')} className="flex flex-col items-center gap-1 cursor-pointer hover:scale-105 transition-transform">
+                   <div className="w-14 h-14 bg-red-600 rounded-2xl flex items-center justify-center shadow-lg border border-red-500">
+                      <span className="text-white text-3xl font-serif font-black">Z</span>
+                   </div>
+                   <span className="text-white text-[10px] font-medium">Ziraat</span>
+                </div>
+
+                {/* Placeholder Apps */}
+                <div className="flex flex-col items-center gap-1 opacity-50">
+                   <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
+                      <span className="text-white text-2xl">💼</span>
+                   </div>
+                   <span className="text-white text-[10px] font-medium">Kariyer</span>
+                </div>
+                <div className="flex flex-col items-center gap-1 opacity-50">
+                   <div className="w-14 h-14 bg-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
+                      <span className="text-white text-2xl">🛒</span>
+                   </div>
+                   <span className="text-white text-[10px] font-medium">Trendyol</span>
+                </div>
+             </div>
+
+             <button onClick={onClose} className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-md px-6 py-2 rounded-full text-white text-xs font-bold border border-white/20">
+                Lock Phone
+             </button>
+          </div>
+        )}
+
+        {/* ======================= */}
+        {/* APP 2: ZIRAAT MOBIL     */}
+        {/* ======================= */}
+        {activeApp === 'bank' && (
+          <div className="flex-1 bg-white w-full h-full flex flex-col relative pt-12">
+            <div className="bg-red-600 px-5 py-4 flex justify-between items-center shadow-md z-10">
+               <button onClick={() => setActiveApp('home')} className="text-white text-2xl font-light">‹</button>
+               <h1 className="text-white font-bold text-sm tracking-widest">ZİRAAT MOBİL</h1>
+               <div className="w-6"></div>
+            </div>
+            
+            <div className="p-5 flex-1 bg-slate-50 flex flex-col gap-4">
+               <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                  <p className="text-xs text-slate-500 font-bold mb-1">Vadesiz TL Hesabı</p>
+                  <p className="text-3xl font-black text-slate-800">{playerData?.money?.toLocaleString() || 0} ₺</p>
+                  <p className="text-[10px] text-slate-400 mt-2">TR12 0001 0000 1234 5678 9012 34</p>
+               </div>
+
+               <div>
+                 <p className="text-xs font-bold text-slate-500 mb-3 pl-1">Son İşlemler</p>
+                 <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                       <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold">↓</div>
+                       <div>
+                         <p className="text-xs font-bold text-slate-800">Para Transferi</p>
+                         <p className="text-[9px] text-slate-400">Bugün</p>
+                       </div>
                     </div>
-                 </div>
-                 <div className="bg-black/50 rounded-lg p-2 text-center border border-slate-800 mt-1">
-                    <p className="text-white font-bold text-lg">+{msg.amount?.toLocaleString()} ₺</p>
+                    <p className="text-emerald-500 font-bold text-sm">+5,000,000 ₺</p>
                  </div>
                </div>
-             </div>
-          ))}
+            </div>
+          </div>
+        )}
 
-          {/* Typing Bubble */}
-          {isTyping && (
-            <div className="flex justify-start mt-1">
-              <div className="bg-slate-800 rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1.5 items-center w-14 justify-center">
-                <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></div>
-                <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce delay-75"></div>
-                <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce delay-150"></div>
+        {/* ======================= */}
+        {/* APP 3: MESSAGES         */}
+        {/* ======================= */}
+        {activeApp === 'messages' && (
+          <div className="flex-1 bg-black flex flex-col relative pt-10">
+            {/* iMessage Header */}
+            <div className="bg-slate-900/90 py-3 px-4 flex items-center gap-3 border-b border-slate-800 z-30">
+              <button onClick={() => setActiveApp('home')} className="text-blue-500 text-3xl font-light mb-1 hover:text-blue-400 leading-none">‹</button>
+              <div className="w-9 h-9 rounded-full bg-slate-600 flex items-center justify-center text-lg shadow-sm">👤</div>
+              <div className="flex flex-col justify-center">
+                <h2 className="text-white font-medium text-[14px] leading-tight">{npc.name} ❯</h2>
+                <p className="text-slate-400 text-[10px]">iMessage</p>
               </div>
             </div>
-          )}
-          <div ref={chatEndRef} />
-        </div>
 
-        {/* Bottom Actions Area */}
-        <div className="bg-slate-900 px-4 pt-3 pb-6 border-t border-slate-800 z-30">
-          {!interactionDone ? (
-            <div className="flex flex-col gap-2">
-              <button onClick={() => handleAction("friendly")} className="w-full bg-slate-800 hover:bg-slate-700 text-blue-400 rounded-xl py-3 text-[14px] font-semibold transition-colors">
-                Say Hello (+Social)
-              </button>
-              <button onClick={() => handleAction("bill")} className="w-full bg-slate-800 hover:bg-slate-700 text-amber-500 rounded-xl py-3 text-[14px] font-semibold transition-colors">
-                Bill Them For Money
-              </button>
-              <button onClick={() => handleAction("scam")} className="w-full bg-rose-950/30 hover:bg-rose-900/40 text-rose-500 border border-rose-900/50 rounded-xl py-3 text-[14px] font-semibold transition-colors">
-                Run Heavy Scam
-              </button>
+            {/* Chat Canvas */}
+            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2 custom-scrollbar pb-4">
+              <p className="text-center text-slate-500 text-[10px] font-medium mb-3 uppercase tracking-widest mt-2">Bugün 10:49</p>
+              
+              {messages.map((msg, index) => {
+                const isMe = msg.sender === 'me';
+                const showTail = index === messages.length - 1 || messages[index + 1]?.sender !== msg.sender;
+                
+                return (
+                  <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[80%] px-4 py-2 text-[14px] leading-snug relative shadow-sm ${
+                      isMe 
+                        ? `bg-blue-600 text-white rounded-2xl ${showTail ? 'rounded-br-sm' : ''}` 
+                        : `bg-slate-800 text-white rounded-2xl ${showTail ? 'rounded-bl-sm' : ''}`
+                    }`}>
+                      {msg.text}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Ziraat Bank Transfer Receipt */}
+              {messages.filter(m => m.isTransfer).map(msg => (
+                 <div key={`receipt-${msg.id}`} className="flex justify-start mt-2 mb-2">
+                   <div className="bg-slate-900 border border-slate-700 rounded-2xl p-3.5 w-60 shadow-lg flex flex-col gap-2">
+                     <div className="flex items-center gap-3">
+                        <div className="bg-red-600 rounded-full w-8 h-8 flex items-center justify-center text-white font-black text-lg font-serif border border-red-500 shadow-inner">Z</div>
+                        <div className="flex-1">
+                          <p className="text-white font-semibold text-[12px] leading-tight">Ziraat Mobil</p>
+                          <p className="text-emerald-400 font-medium text-[10px]">Transfer Başarılı ✔</p>
+                        </div>
+                     </div>
+                     <div className="bg-black/50 rounded-lg p-2 text-center border border-slate-800 mt-1">
+                        <p className="text-white font-bold text-lg">+{msg.amount?.toLocaleString()} ₺</p>
+                     </div>
+                   </div>
+                 </div>
+              ))}
+
+              {isTyping && (
+                <div className="flex justify-start mt-1">
+                  <div className="bg-slate-800 rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1.5 items-center w-14 justify-center">
+                    <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></div>
+                    <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce delay-75"></div>
+                    <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce delay-150"></div>
+                  </div>
+                </div>
+              )}
+              <div ref={chatEndRef} />
             </div>
-          ) : (
-            <div className="flex gap-2">
-              <div className="flex-1 border border-slate-700 rounded-full flex items-center px-4 py-2 bg-black">
-                 <span className="text-slate-600 text-[14px]">iMessage</span>
-              </div>
-              <button onClick={onClose} className="bg-slate-700 hover:bg-slate-600 rounded-full w-10 h-10 flex items-center justify-center transition-colors">
-                <span className="text-white text-sm">✕</span>
-              </button>
+
+            {/* Bottom Actions Area */}
+            <div className="bg-slate-900 px-4 pt-3 pb-8 border-t border-slate-800 z-30">
+              {!interactionDone ? (
+                <div className="flex flex-col gap-2">
+                  <button onClick={() => handleAction("friendly")} className="w-full bg-slate-800 hover:bg-slate-700 text-blue-400 rounded-xl py-3 text-[14px] font-semibold transition-colors">
+                    Merhaba De (+Social)
+                  </button>
+                  <button onClick={() => handleAction("bill")} className="w-full bg-slate-800 hover:bg-slate-700 text-amber-500 rounded-xl py-3 text-[14px] font-semibold transition-colors">
+                    Para İste
+                  </button>
+                  <button onClick={() => handleAction("scam")} className="w-full bg-rose-950/30 hover:bg-rose-900/40 text-rose-500 border border-rose-900/50 rounded-xl py-3 text-[14px] font-semibold transition-colors">
+                    Ağır Dolandırıcılık
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <div className="flex-1 border border-slate-700 rounded-full flex items-center px-4 py-2 bg-black">
+                     <span className="text-slate-600 text-[14px]">iMessage</span>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-          
-          {/* iOS Home Indicator */}
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-slate-500 rounded-full"></div>
-        </div>
+          </div>
+        )}
+
+        {/* Global iOS Home Indicator (always visible at bottom) */}
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-slate-500 rounded-full z-[100] cursor-pointer" onClick={() => setActiveApp('home')}></div>
       </div>
     </div>
   );

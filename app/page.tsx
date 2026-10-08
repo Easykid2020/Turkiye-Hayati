@@ -22,14 +22,13 @@ export default function GameHome() {
   const [player, setPlayer] = useState({
     money: 5000000, 
     health: 10000, 
-    happiness: 8500, // For the "Mood" text
+    happiness: 8500, 
     energy: 10000, 
     location: 'Istanbul',
     x: 0, 
     y: 0
   });
 
-  // Intercept the game screen with Onboarding if the game hasn't started
   if (!gameStarted) {
     return (
       <Onboarding 
@@ -45,7 +44,6 @@ export default function GameHome() {
     );
   }
 
-  // Calculate mood based on happiness
   const getMood = () => {
     if (player.happiness > 8000) return { emoji: '🤩', text: 'Blessed', color: 'text-emerald-500' };
     if (player.happiness > 5000) return { emoji: '😊', text: 'Happy', color: 'text-emerald-400' };
@@ -55,7 +53,6 @@ export default function GameHome() {
 
   const mood = getMood();
 
-  // Temporary 2D Map until we install the 3D Engine
   const cityMap: TileType[][] = [
     ['house', 'road', 'shop', 'road', 'estate', 'grass', 'grass', 'road'],
     ['grass', 'road', 'road', 'road', 'cafe', 'road', 'hospital', 'road'],
@@ -80,8 +77,6 @@ export default function GameHome() {
       
       {/* FLOATING TOP STATUS BAR */}
       <header className="fixed top-4 left-1/2 -translate-x-1/2 z-40 w-[95%] max-w-4xl flex justify-between items-center pointer-events-none">
-        
-        {/* Left Side: Time, Mood, Online */}
         <div className="bg-white/90 backdrop-blur-md px-4 py-2.5 rounded-full shadow-sm border border-slate-200 flex items-center gap-4 text-xs font-semibold pointer-events-auto">
           <span className="flex items-center gap-1.5 text-slate-600">
             ☀️ Mon 5 - 4:40 PM
@@ -97,7 +92,6 @@ export default function GameHome() {
           </span>
         </div>
 
-        {/* Right Side: Wallet */}
         <div className="bg-white/90 backdrop-blur-md px-2 py-1.5 rounded-full shadow-sm border border-slate-200 flex items-center gap-3 pointer-events-auto">
           <span className="pl-3 font-bold text-slate-800 tracking-tight">
             {player.money.toLocaleString()} ₺
@@ -113,15 +107,8 @@ export default function GameHome() {
         <div className="bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-3 pointer-events-auto w-48 cursor-pointer hover:bg-slate-50 transition-colors">
           <div className="bg-emerald-100 w-8 h-8 rounded-full flex items-center justify-center text-xl">🍽️</div>
           <div>
-            <p className="text-xs font-bold text-slate-800 leading-tight">Eat something</p>
-            <p className="text-[10px] text-slate-500">Tap the shop or cafe</p>
-          </div>
-        </div>
-        <div className="bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-3 pointer-events-auto w-48 cursor-pointer hover:bg-slate-50 transition-colors">
-          <div className="bg-blue-100 w-8 h-8 rounded-full flex items-center justify-center text-xl">💎</div>
-          <div>
-            <p className="text-xs font-bold text-slate-800 leading-tight">Daily gem hunt</p>
-            <p className="text-[10px] text-slate-500">Find next prize</p>
+            <p className="text-xs font-bold text-slate-800 leading-tight">Yemek Ye</p>
+            <p className="text-[10px] text-slate-500">Kafeye veya markete git</p>
           </div>
         </div>
       </div>
@@ -143,7 +130,7 @@ export default function GameHome() {
                       {isPlayerHere && (
                         <div className="absolute -mt-10 bg-white px-2 py-1 rounded-full shadow-lg border border-slate-200 flex items-center gap-1 z-10 animate-bounce">
                            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                           <span className="text-[10px] font-bold text-slate-800">You</span>
+                           <span className="text-[10px] font-bold text-slate-800">Sen</span>
                         </div>
                       )}
                     </div>
@@ -164,7 +151,7 @@ export default function GameHome() {
             className={`flex flex-col items-center justify-center w-20 h-14 rounded-full transition-colors ${activeTab === 'home' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
           >
             <svg className="w-6 h-6 mb-0.5" fill={activeTab === 'home' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-            <span className="text-[10px] font-medium">Home</span>
+            <span className="text-[10px] font-medium">Ev</span>
           </button>
 
           <button 
@@ -172,7 +159,7 @@ export default function GameHome() {
             className={`flex flex-col items-center justify-center w-20 h-14 rounded-full transition-colors ${activeTab === 'map' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
           >
             <svg className="w-6 h-6 mb-0.5" fill={activeTab === 'map' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
-            <span className="text-[10px] font-medium">Map</span>
+            <span className="text-[10px] font-medium">Harita</span>
           </button>
 
           <button 
@@ -180,16 +167,16 @@ export default function GameHome() {
             className={`flex flex-col items-center justify-center w-20 h-14 rounded-full transition-colors ${isPhoneOpen ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
           >
             <svg className="w-5 h-5 mb-1" fill={isPhoneOpen ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-            <span className="text-[10px] font-medium">Phone</span>
+            <span className="text-[10px] font-medium">Telefon</span>
           </button>
 
         </div>
       </div>
 
-      {/* The iPhone Modal overlay */}
       {isPhoneOpen && (
         <ChatModal 
           onClose={() => setIsPhoneOpen(false)} 
+          playerData={player}
           updateWallet={(amount: number) => setPlayer(p => ({ ...p, money: p.money + amount }))}
           updateEnergy={(amount: number) => setPlayer(p => ({ ...p, energy: Math.max(0, p.energy + amount) }))}
         />
