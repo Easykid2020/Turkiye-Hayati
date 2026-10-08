@@ -11,7 +11,7 @@ interface Message {
 }
 
 export default function ChatModal({ onClose, updateWallet, updateEnergy, playerData }: any) {
-  const [activeApp, setActiveApp] = useState<'home' | 'messages' | 'bank'>('home');
+  const [activeApp, setActiveApp] = useState<'home' | 'messages' | 'bank' | 'career'>('home');
   
   // Chat State
   const [npc] = useState(generateRandomNPC());
@@ -21,6 +21,10 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
   const [isTyping, setIsTyping] = useState(false);
   const [interactionDone, setInteractionDone] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Career State
+  const [currentJob, setCurrentJob] = useState<string>('İşsiz (Unemployed)');
+  const [jobIncome, setJobIncome] = useState<number>(0);
 
   function generateRandomNPC() {
     const names = ["Emre", "Ayşe", "Tariq", "Fatma", "Ozan", "Leyla"];
@@ -98,6 +102,12 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
     }
   };
 
+  const applyForJob = (title: string, salary: number) => {
+    setCurrentJob(title);
+    setJobIncome(salary);
+    updateWallet(salary); // Immediate signing bonus/weekly pay simulation
+  };
+
   return (
     <div className="fixed inset-0 bg-slate-900/80 flex items-center justify-center z-[100] p-4 backdrop-blur-sm">
       
@@ -140,13 +150,15 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
                    <span className="text-white text-[10px] font-medium">Ziraat</span>
                 </div>
 
-                {/* Placeholder Apps */}
-                <div className="flex flex-col items-center gap-1 opacity-50">
+                {/* Career App Icon */}
+                <div onClick={() => setActiveApp('career')} className="flex flex-col items-center gap-1 cursor-pointer hover:scale-105 transition-transform">
                    <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
                       <span className="text-white text-2xl">💼</span>
                    </div>
                    <span className="text-white text-[10px] font-medium">Kariyer</span>
                 </div>
+
+                {/* Placeholder App */}
                 <div className="flex flex-col items-center gap-1 opacity-50">
                    <div className="w-14 h-14 bg-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
                       <span className="text-white text-2xl">🛒</span>
@@ -185,7 +197,7 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
                     <div className="flex items-center gap-3">
                        <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold">↓</div>
                        <div>
-                         <p className="text-xs font-bold text-slate-800">Para Transferi</p>
+                         <p className="text-xs font-bold text-slate-800">Doğum Piyangosu</p>
                          <p className="text-[9px] text-slate-400">Bugün</p>
                        </div>
                     </div>
@@ -197,11 +209,65 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
         )}
 
         {/* ======================= */}
-        {/* APP 3: MESSAGES         */}
+        {/* APP 3: KARİYER (CAREER) */}
+        {/* ======================= */}
+        {activeApp === 'career' && (
+          <div className="flex-1 bg-white w-full h-full flex flex-col relative pt-12">
+            <div className="bg-blue-600 px-5 py-4 flex justify-between items-center shadow-md z-10">
+               <button onClick={() => setActiveApp('home')} className="text-white text-2xl font-light">‹</button>
+               <h1 className="text-white font-bold text-sm tracking-widest">TÜRKİYE KARİYER</h1>
+               <div className="w-6"></div>
+            </div>
+            
+            <div className="p-5 flex-1 bg-slate-50 flex flex-col gap-4 overflow-y-auto">
+               <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+                  <p className="text-[10px] font-bold text-blue-600 uppercase">Mevcut Durum</p>
+                  <p className="text-lg font-black text-blue-900 mt-1">{currentJob}</p>
+                  <p className="text-xs text-blue-700 mt-0.5">Haftalık Gelir: {jobIncome.toLocaleString()} ₺</p>
+               </div>
+
+               <p className="text-xs font-bold text-slate-500 mt-2">Açık Pozisyonlar</p>
+               
+               <div className="space-y-3">
+                  <div className="bg-white p-3.5 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm">
+                     <div>
+                       <p className="text-xs font-bold text-slate-800">Dönerci Çırağı</p>
+                       <p className="text-[10px] text-emerald-600 font-semibold">1,500 ₺ / hafta</p>
+                     </div>
+                     <button onClick={() => applyForJob('Dönerci Çırağı', 1500)} className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">
+                       Başvur
+                     </button>
+                  </div>
+
+                  <div className="bg-white p-3.5 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm">
+                     <div>
+                       <p className="text-xs font-bold text-slate-800">Junior Yazılımcı</p>
+                       <p className="text-[10px] text-emerald-600 font-semibold">12,500 ₺ / hafta</p>
+                     </div>
+                     <button onClick={() => applyForJob('Junior Yazılımcı', 12500)} className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">
+                       Başvur
+                     </button>
+                  </div>
+
+                  <div className="bg-white p-3.5 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm">
+                     <div>
+                       <p className="text-xs font-bold text-slate-800">Holding Yönetici Adayı</p>
+                       <p className="text-[10px] text-emerald-600 font-semibold">75,000 ₺ / hafta</p>
+                     </div>
+                     <button onClick={() => applyForJob('Holding Yönetici Adayı', 75000)} className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">
+                       Başvur
+                     </button>
+                  </div>
+               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ======================= */}
+        {/* APP 4: MESSAGES         */}
         {/* ======================= */}
         {activeApp === 'messages' && (
           <div className="flex-1 bg-black flex flex-col relative pt-10">
-            {/* iMessage Header */}
             <div className="bg-slate-900/90 py-3 px-4 flex items-center gap-3 border-b border-slate-800 z-30">
               <button onClick={() => setActiveApp('home')} className="text-blue-500 text-3xl font-light mb-1 hover:text-blue-400 leading-none">‹</button>
               <div className="w-9 h-9 rounded-full bg-slate-600 flex items-center justify-center text-lg shadow-sm">👤</div>
@@ -211,7 +277,6 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
               </div>
             </div>
 
-            {/* Chat Canvas */}
             <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2 custom-scrollbar pb-4">
               <p className="text-center text-slate-500 text-[10px] font-medium mb-3 uppercase tracking-widest mt-2">Bugün 10:49</p>
               
@@ -232,7 +297,6 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
                 );
               })}
 
-              {/* Ziraat Bank Transfer Receipt */}
               {messages.filter(m => m.isTransfer).map(msg => (
                  <div key={`receipt-${msg.id}`} className="flex justify-start mt-2 mb-2">
                    <div className="bg-slate-900 border border-slate-700 rounded-2xl p-3.5 w-60 shadow-lg flex flex-col gap-2">
@@ -262,7 +326,6 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
               <div ref={chatEndRef} />
             </div>
 
-            {/* Bottom Actions Area */}
             <div className="bg-slate-900 px-4 pt-3 pb-8 border-t border-slate-800 z-30">
               {!interactionDone ? (
                 <div className="flex flex-col gap-2">
@@ -287,7 +350,6 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
           </div>
         )}
 
-        {/* Global iOS Home Indicator (always visible at bottom) */}
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-slate-500 rounded-full z-[100] cursor-pointer" onClick={() => setActiveApp('home')}></div>
       </div>
     </div>
