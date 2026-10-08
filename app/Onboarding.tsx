@@ -1,41 +1,8 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import React, { useState } from 'react';
 
 type Language = 'en' | 'tr';
-
-function DummyCharacter() {
-  const groupRef = useRef<any>();
-  
-  useFrame(() => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += 0.005;
-    }
-  });
-
-  return (
-    <group ref={groupRef} position={[0, -1.2, 0]}>
-      <mesh position={[0, 2.5, 0]}>
-        <sphereGeometry args={[0.5, 32, 32]} />
-        <meshStandardMaterial color="#fcd34d" />
-      </mesh>
-      <mesh position={[0, 1.2, 0]}>
-        <cylinderGeometry args={[0.6, 0.6, 1.6, 32]} />
-        <meshStandardMaterial color="#dc2626" />
-      </mesh>
-      <mesh position={[-0.25, 0, 0]}>
-        <cylinderGeometry args={[0.2, 0.2, 0.8, 32]} />
-        <meshStandardMaterial color="#1e3a8a" />
-      </mesh>
-      <mesh position={[0.25, 0, 0]}>
-        <cylinderGeometry args={[0.2, 0.2, 0.8, 32]} />
-        <meshStandardMaterial color="#1e3a8a" />
-      </mesh>
-    </group>
-  );
-}
 
 export default function Onboarding({ onComplete }: { onComplete: (data: any) => void }) {
   const [lang, setLang] = useState<Language>('en'); 
@@ -45,11 +12,6 @@ export default function Onboarding({ onComplete }: { onComplete: (data: any) => 
   const [dream, setDream] = useState('');
   const [lotteryResult, setLotteryResult] = useState<any>(null);
   const [isSpinning, setIsSpinning] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const text = {
     en: {
@@ -193,15 +155,11 @@ export default function Onboarding({ onComplete }: { onComplete: (data: any) => 
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-600 via-red-500 to-yellow-400 z-10"></div>
 
         <div className="bg-slate-50 w-full md:w-5/12 p-8 flex flex-col items-center justify-center border-r border-slate-100 relative">
-          <div className="w-full h-full min-h-[300px] flex-1 relative bg-gradient-to-b from-slate-200 to-slate-100 rounded-3xl overflow-hidden shadow-inner border-[4px] border-white mb-4">
-            {mounted && (
-              <Canvas camera={{ position: [0, 1, 5], fov: 50 }}>
-                <ambientLight intensity={0.6} />
-                <directionalLight position={[5, 5, 5]} intensity={1} />
-                <DummyCharacter />
-                <OrbitControls enableZoom={false} enablePan={false} minPolarAngle={Math.PI / 2.5} maxPolarAngle={Math.PI / 2.5} />
-              </Canvas>
-            )}
+          <div className="w-full h-full min-h-[300px] flex-1 relative bg-gradient-to-b from-slate-200 to-slate-100 rounded-3xl overflow-hidden shadow-inner border-[4px] border-white mb-4 flex flex-col items-center justify-center">
+            <div className="w-20 h-32 bg-red-600 rounded-2xl shadow-lg relative flex items-center justify-center border border-red-500 animate-pulse">
+               <span className="text-white font-black text-xs">TÜRKİYE</span>
+            </div>
+            <p className="text-[10px] font-bold text-slate-400 mt-3 uppercase tracking-wider">3D Avatar Preview</p>
           </div>
           <p className="font-bold text-slate-700 z-10">{username || '@username'}</p>
         </div>
