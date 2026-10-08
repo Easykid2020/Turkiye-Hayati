@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 
 export default function ChatModal({ onClose, playerData, updateWallet, updateEnergy }: any) {
-  const [activeApp, setActiveApp] = useState<'home' | 'bank' | 'career' | 'stocks' | 'market' | 'lcw'>('home');
+  const [activeApp, setActiveApp] = useState<'home' | 'bank' | 'career' | 'stocks' | 'market' | 'lcw' | 'houses' | 'cars' | 'forbes'>('home');
   const [jobs] = useState([
     { id: 'intern', title: 'Computer Engineering Intern', salary: 15000, desc: 'Coding, Verilog & debugging at Teknopark' },
     { id: 'barista', title: 'Kadıköy Barista', salary: 8000, desc: 'Make Turkish coffee & serve locals' },
@@ -24,9 +24,28 @@ export default function ChatModal({ onClose, playerData, updateWallet, updateEne
     { id: 'sneakers', name: 'Trendyol Sneaker', cost: 1200, icon: '👟' },
   ];
 
+  const houses = [
+    { id: 'bagcilar', name: 'Bağcılar Basık Ev', rent: 1500, desc: 'Hard start, cheap rent, street hustle rules.' },
+    { id: 'kadikoy', name: 'Kadıköy Sahil Daire', rent: 6000, desc: 'Sea breeze, cafes, and vibrant nightlife.' },
+    { id: 'besiktas', name: 'Beşiktaş Çarşı Rezidans', rent: 12000, desc: 'Right in the heart of student & football culture.' },
+    { id: 'etiler', name: 'Etiler Lüks Villa', rent: 45000, desc: 'Top tier living for the elite.' },
+  ];
+
+  const cars = [
+    { id: 'tofas', name: 'Tofaş Şahin (Doğan SLX)', cost: 120000, icon: '🚗', desc: 'Legendary street drift machine.' },
+    { id: 'toros', name: 'Renault 12 Toros', cost: 85000, icon: '🚙', desc: 'Indestructible village & city cruiser.' },
+    { id: 'TOGG', name: 'TOGG T10X (Electric SUV)', cost: 1800000, icon: '🚙⚡', desc: 'The pride of Turkish EV engineering.' },
+  ];
+
+  const forbesList = [
+    { rank: 1, name: '@ankara_boss', netWorth: '12,450,000 ₺', title: 'Tech Mogul' },
+    { rank: 2, name: '@istanbul_king', netWorth: '9,800,000 ₺', title: 'Crypto Whale' },
+    { rank: 3, name: playerData.username, netWorth: `${playerData.money.toLocaleString()} ₺`, title: 'Rising Hustler' },
+  ];
+
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-slate-900 w-full max-w-sm h-[680px] rounded-[3rem] shadow-2xl border-4 border-slate-700 flex flex-col overflow-hidden relative text-white">
+      <div className="bg-slate-900 w-full max-w-sm h-[700px] rounded-[3rem] shadow-2xl border-4 border-slate-700 flex flex-col overflow-hidden relative text-white">
         
         {/* Phone Notch */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-black rounded-b-2xl z-20 flex items-center justify-center">
@@ -68,6 +87,18 @@ export default function ChatModal({ onClose, playerData, updateWallet, updateEne
                 <button onClick={() => setActiveApp('lcw')} className="bg-purple-600/20 border border-purple-500/40 p-3 rounded-2xl flex flex-col items-center gap-1 hover:bg-purple-600/30 transition-all">
                   <span className="text-2xl">🛍️</span>
                   <span className="text-[10px] font-bold">LC Waikiki</span>
+                </button>
+                <button onClick={() => setActiveApp('houses')} className="bg-indigo-600/20 border border-indigo-500/40 p-3 rounded-2xl flex flex-col items-center gap-1 hover:bg-indigo-600/30 transition-all">
+                  <span className="text-2xl">🏠</span>
+                  <span className="text-[10px] font-bold">Real Estate</span>
+                </button>
+                <button onClick={() => setActiveApp('cars')} className="bg-cyan-600/20 border border-cyan-500/40 p-3 rounded-2xl flex flex-col items-center gap-1 hover:bg-cyan-600/30 transition-all">
+                  <span className="text-2xl">🚗</span>
+                  <span className="text-[10px] font-bold">Car Gallery</span>
+                </button>
+                <button onClick={() => setActiveApp('forbes')} className="bg-yellow-600/20 border border-yellow-500/40 p-3 rounded-2xl flex flex-col items-center gap-1 hover:bg-yellow-600/30 transition-all">
+                  <span className="text-2xl">👑</span>
+                  <span className="text-[10px] font-bold">Forbes TR</span>
                 </button>
               </div>
 
@@ -197,6 +228,85 @@ export default function ChatModal({ onClose, playerData, updateWallet, updateEne
                     >
                       {item.cost} ₺
                     </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeApp === 'houses' && (
+            <div className="space-y-4">
+              <button onClick={() => setActiveApp('home')} className="text-xs text-red-400 font-bold mb-2">← Back to Home</button>
+              <h4 className="text-sm font-black mb-3">🏠 Real Estate Agency</h4>
+              <div className="space-y-2.5">
+                {houses.map(h => (
+                  <div key={h.id} className="bg-slate-800/80 p-3 rounded-2xl border border-slate-700 flex justify-between items-center">
+                    <div>
+                      <p className="text-xs font-bold">{h.name}</p>
+                      <p className="text-[10px] text-slate-400">{h.desc}</p>
+                      <p className="text-[10px] text-red-400 font-bold mt-1">{h.rent.toLocaleString()} ₺ / week</p>
+                    </div>
+                    <button onClick={() => alert(`Moved into ${h.name}!`)} className="bg-indigo-600 hover:bg-indigo-500 px-3 py-2 rounded-xl text-[10px] font-bold">
+                      Rent
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeApp === 'cars' && (
+            <div className="space-y-4">
+              <button onClick={() => setActiveApp('home')} className="text-xs text-red-400 font-bold mb-2">← Back to Home</button>
+              <h4 className="text-sm font-black mb-3">🚗 Car Showroom</h4>
+              <div className="space-y-2.5">
+                {cars.map(c => (
+                  <div key={c.id} className="bg-slate-800/80 p-3 rounded-2xl border border-slate-700 flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{c.icon}</span>
+                      <div>
+                        <p className="text-xs font-bold">{c.name}</p>
+                        <p className="text-[10px] text-slate-400">{c.desc}</p>
+                        <p className="text-[10px] text-cyan-400 font-bold mt-1">{c.cost.toLocaleString()} ₺</p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        if (playerData.money < c.cost) {
+                          alert("Yetersiz bakiye!");
+                        } else {
+                          updateWallet(-c.cost);
+                          alert(`Congratulations on your new ${c.name}!`);
+                        }
+                      }} 
+                      className="bg-cyan-600 hover:bg-cyan-500 px-3 py-2 rounded-xl text-[10px] font-bold"
+                    >
+                      Buy
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeApp === 'forbes' && (
+            <div className="space-y-4">
+              <button onClick={() => setActiveApp('home')} className="text-xs text-red-400 font-bold mb-2">← Back to Home</button>
+              <div className="bg-gradient-to-r from-yellow-600 to-amber-700 p-4 rounded-2xl text-center mb-3">
+                <h4 className="text-sm font-black">👑 FORBES TÜRKİYE</h4>
+                <p className="text-[10px] text-amber-200">The Richest Citizens in Türkiye Hayatı</p>
+              </div>
+              <div className="space-y-2.5">
+                {forbesList.map(f => (
+                  <div key={f.rank} className="bg-slate-800/80 p-3 rounded-2xl border border-slate-700 flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-black text-yellow-400">#{f.rank}</span>
+                      <div>
+                        <p className="text-xs font-bold">{f.name}</p>
+                        <p className="text-[10px] text-slate-400">{f.title}</p>
+                      </div>
+                    </div>
+                    <span className="text-xs font-bold text-emerald-400">{f.netWorth}</span>
                   </div>
                 ))}
               </div>
