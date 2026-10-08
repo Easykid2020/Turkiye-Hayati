@@ -1,11 +1,49 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
 
 type Language = 'en' | 'tr';
 
+// THE NEW 3D CHARACTER ENGINE
+function DummyCharacter() {
+  const groupRef = useRef<any>();
+  
+  // This makes the character slowly spin automatically
+  useFrame(() => {
+    if (groupRef.current) {
+      groupRef.current.rotation.y += 0.005;
+    }
+  });
+
+  return (
+    <group ref={groupRef} position={[0, -1.2, 0]}>
+      {/* Head */}
+      <mesh position={[0, 2.5, 0]}>
+        <sphereGeometry args={[0.5, 32, 32]} />
+        <meshStandardMaterial color="#fcd34d" />
+      </mesh>
+      {/* Body (Ziraat Red) */}
+      <mesh position={[0, 1.2, 0]}>
+        <cylinderGeometry args={[0.6, 0.6, 1.6, 32]} />
+        <meshStandardMaterial color="#dc2626" />
+      </mesh>
+      {/* Legs (Dark Blue) */}
+      <mesh position={[-0.25, 0, 0]}>
+        <cylinderGeometry args={[0.2, 0.2, 0.8, 32]} />
+        <meshStandardMaterial color="#1e3a8a" />
+      </mesh>
+      <mesh position={[0.25, 0, 0]}>
+        <cylinderGeometry args={[0.2, 0.2, 0.8, 32]} />
+        <meshStandardMaterial color="#1e3a8a" />
+      </mesh>
+    </group>
+  );
+}
+
 export default function Onboarding({ onComplete }: { onComplete: (data: any) => void }) {
-  const [lang, setLang] = useState<Language>('en'); // Default to English now
+  const [lang, setLang] = useState<Language>('en'); 
   const [step, setStep] = useState(1);
   const [username, setUsername] = useState('');
   const [traits, setTraits] = useState<string[]>([]);
@@ -13,13 +51,11 @@ export default function Onboarding({ onComplete }: { onComplete: (data: any) => 
   const [lotteryResult, setLotteryResult] = useState<any>(null);
   const [isSpinning, setIsSpinning] = useState(false);
 
-  // Localization Dictionary
   const text = {
     en: {
       title: 'Türkiye Hayatı',
       step: 'Step',
       of: 'of',
-      avatar: 'Avatar Model',
       createAcc: 'Create account',
       createSub: 'Write your own story in Türkiye Hayatı.',
       username: 'Username',
@@ -48,7 +84,6 @@ export default function Onboarding({ onComplete }: { onComplete: (data: any) => 
       title: 'Türkiye Hayatı',
       step: 'Adım',
       of: '/',
-      avatar: 'Avatar Modeli',
       createAcc: 'Hesap oluştur',
       createSub: 'Türkiye Hayatı\'nda kendi hikayeni yaz.',
       username: 'Kullanıcı Adı',
@@ -131,12 +166,10 @@ export default function Onboarding({ onComplete }: { onComplete: (data: any) => 
   return (
     <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4 font-sans text-slate-800">
       
-      {/* Top Header */}
       <div className="fixed top-0 w-full bg-white/90 backdrop-blur-md px-6 py-4 flex justify-between items-center border-b border-slate-200 z-50 shadow-sm">
         <h1 className="font-black text-xl tracking-tighter text-red-600 uppercase">Türkiye Hayatı</h1>
         
         <div className="flex items-center gap-4">
-          {/* English / Turkish Toggle */}
           <div className="bg-slate-100 p-1 rounded-lg flex border border-slate-200">
             <button 
               onClick={() => setLang('en')} 
@@ -156,18 +189,28 @@ export default function Onboarding({ onComplete }: { onComplete: (data: any) => 
         </div>
       </div>
 
-      {/* Main Container - Added subtle VakıfBank Yellow accent shadow */}
       <div className="bg-white w-full max-w-3xl rounded-[2rem] shadow-[0_15px_40px_rgba(250,204,21,0.15)] border border-slate-200 flex flex-col md:flex-row overflow-hidden min-h-[500px] mt-12 relative">
-        
-        {/* Ziraat Red Top Border Accent */}
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-600 via-red-500 to-yellow-400 z-10"></div>
 
-        {/* Left Side: Avatar Preview */}
+        {/* ========================================= */}
+        {/* LEFT SIDE: LIVE 3D CANVAS INJECTION       */}
+        {/* ========================================= */}
         <div className="bg-slate-50 w-full md:w-5/12 p-8 flex flex-col items-center justify-center border-r border-slate-100 relative">
-          <div className="w-32 h-64 bg-slate-200 rounded-full animate-pulse flex items-center justify-center text-slate-400 font-bold mb-4 shadow-inner border-[4px] border-white">
-            {t.avatar}
+          
+          <div className="w-full h-full min-h-[300px] flex-1 relative bg-gradient-to-b from-slate-200 to-slate-100 rounded-3xl overflow-hidden shadow-inner border-[4px] border-white mb-4">
+            {/* The 3D Engine Frame */}
+            <Canvas camera={{ position: [0, 1, 5], fov: 50 }}>
+              <ambientLight intensity={0.6} />
+              <directionalLight position={[5, 5, 5]} intensity={1} />
+              
+              <DummyCharacter />
+              
+              {/* This lets you drag to rotate the character */}
+              <OrbitControls enableZoom={false} enablePan={false} minPolarAngle={Math.PI / 2.5} maxPolarAngle={Math.PI / 2.5} />
+            </Canvas>
           </div>
-          <p className="font-bold text-slate-700">{username || '@username'}</p>
+
+          <p className="font-bold text-slate-700 z-10">{username || '@username'}</p>
         </div>
 
         {/* Right Side: Step Forms */}
