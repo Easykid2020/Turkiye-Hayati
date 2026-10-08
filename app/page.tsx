@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { useState } from 'react';
+import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { createClient } from '@supabase/supabase-js';
 import ChatModal from './ChatModal';
@@ -16,13 +16,11 @@ type Tab = 'home' | 'map' | 'phone';
 function CityWorldMap({ currentLocation, onSelectLocation }: { currentLocation: string, onSelectLocation: (id: string) => void }) {
   return (
     <group position={[0, -1, 0]}>
-      {/* Ground Grid */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
         <planeGeometry args={[30, 30]} />
         <meshStandardMaterial color="#cbd5e1" />
       </mesh>
 
-      {/* Kadıköy District Block */}
       <group position={[-3, 0, -3]} onClick={() => onSelectLocation('kadikoy')}>
         <mesh position={[0, 0.5, 0]}>
           <boxGeometry args={[3, 1, 3]} />
@@ -30,20 +28,17 @@ function CityWorldMap({ currentLocation, onSelectLocation }: { currentLocation: 
         </mesh>
       </group>
 
-      {/* Kızılay District Block & Billboard Placeholder */}
       <group position={[3, 0, -3]} onClick={() => onSelectLocation('kizilay')}>
         <mesh position={[0, 0.7, 0]}>
           <boxGeometry args={[3, 1.4, 3]} />
           <meshStandardMaterial color={currentLocation === 'kizilay' ? '#dc2626' : '#f59e0b'} />
         </mesh>
-        {/* Billboard Ad Mesh */}
         <mesh position={[0, 1.8, 0]}>
           <boxGeometry args={[2.2, 0.8, 0.2]} />
           <meshStandardMaterial color="#111827" />
         </mesh>
       </group>
 
-      {/* Beşiktaş District Block */}
       <group position={[-3, 0, 3]} onClick={() => onSelectLocation('besiktas')}>
         <mesh position={[0, 0.6, 0]}>
           <boxGeometry args={[3, 1.2, 3]} />
@@ -51,7 +46,6 @@ function CityWorldMap({ currentLocation, onSelectLocation }: { currentLocation: 
         </mesh>
       </group>
 
-      {/* Bağcılar District Block */}
       <group position={[3, 0, 3]} onClick={() => onSelectLocation('bagcilar')}>
         <mesh position={[0, 0.4, 0]}>
           <boxGeometry args={[3, 0.8, 3]} />
@@ -89,7 +83,8 @@ export default function GameHome() {
       rentLabel: 'Rent',
       week: 'week',
       health: 'Health',
-      energy: 'Energy'
+      energy: 'Energy',
+      transitBtn: 'Take İETT Bus / Dolmuş (15 ₺)'
     },
     tr: {
       activeLocation: 'AKTİF BÖLGE',
@@ -101,7 +96,8 @@ export default function GameHome() {
       rentLabel: 'Kira',
       week: 'hafta',
       health: 'Sağlık',
-      energy: 'Enerji'
+      energy: 'Enerji',
+      transitBtn: 'İETT Otobüsü / Dolmuşuna Bin (15 ₺)'
     }
   };
 
@@ -131,6 +127,18 @@ export default function GameHome() {
       />
     );
   }
+
+  const travelWithTransit = (id: string) => {
+    if (player.money < 15) {
+      alert("Yetersiz bakiye! (Insufficient funds for transit)");
+      return;
+    }
+    setPlayer(p => ({
+      ...p,
+      money: p.money - 15,
+      location: id
+    }));
+  };
 
   const getMood = () => {
     if (player.happiness > 8000) return { emoji: '🤩', text: language === 'en' ? 'Blessed' : 'Harika', color: 'text-emerald-500' };
@@ -174,7 +182,7 @@ export default function GameHome() {
         </div>
       </div>
 
-      {/* MAIN CONTENT AREA: 3D WORLD MAP */}
+      {/* MAIN CONTENT AREA: 3D WORLD MAP & TRANSIT */}
       <div className="flex-1 w-full h-full flex items-center justify-center p-4 pt-24 pb-32">
         {activeTab === 'map' && (
           <div className="bg-white/90 backdrop-blur-md p-6 rounded-[3rem] shadow-xl border border-white max-w-3xl w-full flex flex-col items-center">
@@ -185,16 +193,32 @@ export default function GameHome() {
             </div>
 
             {/* Interactive 3D Canvas Viewport */}
-            <div className="w-full h-72 bg-gradient-to-b from-slate-900 to-slate-800 rounded-3xl overflow-hidden shadow-inner border-4 border-white relative">
+            <div className="w-full h-60 bg-gradient-to-b from-slate-900 to-slate-800 rounded-3xl overflow-hidden shadow-inner border-4 border-white relative mb-4">
               <Canvas camera={{ position: [5, 5, 5], fov: 60 }}>
                 <ambientLight intensity={0.8} />
                 <directionalLight position={[10, 20, 10]} intensity={1.5} />
-                <CityWorldMap currentLocation={player.location} onSelectLocation={(id) => setPlayer(p => ({ ...p, location: id }))} />
+                <CityWorldMap currentLocation={player.location} onSelectLocation={(id) => travelWithTransit(id)} />
                 <OrbitControls enableZoom={true} enablePan={true} maxPolarAngle={Math.PI / 2.2} />
               </Canvas>
               <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md text-white text-[10px] px-3 py-1 rounded-full pointer-events-none">
-                🗺️ Click district blocks to travel instantly
+                🚌 {t.transitBtn}
               </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 w-full">
+              {locations.map(loc => (
+                <button
+                  key={loc.id}
+                  onClick={() => travelWithTransit(loc.id)}
+                  className={`p-3 rounded-2xl border-2 transition-all flex items-center gap-3 text-left ${player.location === loc.id ? 'border-red-600 bg-red-50 shadow-sm' : 'border-slate-100 bg-white hover:border-slate-300'}`}
+                >
+                  <span className="text-2xl">{loc.icon}</span>
+                  <div>
+                    <h3 className="font-bold text-slate-800 text-xs">{loc.name}</h3>
+                    <p className="text-[9px] text-slate-500">15 ₺ Transit</p>
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
         )}
