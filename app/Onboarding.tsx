@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import dynamic from 'next/dynamic';
+import { useFrame } from '@react-three/fiber';
 
 type Language = 'en' | 'tr';
 
@@ -17,13 +17,11 @@ function Real3DCharacter({ customization }: { customization: any }) {
 
   return (
     <group ref={groupRef} position={[0, -1.2, 0]}>
-      {/* Head */}
       <mesh position={[0, 2.5, 0]}>
         <sphereGeometry args={[0.5, 32, 32]} />
         <meshStandardMaterial color={customization.skinTone} />
       </mesh>
 
-      {/* Eyes */}
       <mesh position={[-0.15, 2.6, 0.45]}>
         <sphereGeometry args={[0.07, 16, 16]} />
         <meshStandardMaterial color="#000000" />
@@ -33,7 +31,6 @@ function Real3DCharacter({ customization }: { customization: any }) {
         <meshStandardMaterial color="#000000" />
       </mesh>
 
-      {/* Optional Sunglasses / Glasses */}
       {customization.hasGlasses && (
         <group position={[0, 2.6, 0.42]}>
           <mesh position={[-0.15, 0, 0]}>
@@ -51,19 +48,16 @@ function Real3DCharacter({ customization }: { customization: any }) {
         </group>
       )}
 
-      {/* Hair */}
       <mesh position={[0, 2.85, 0]}>
         <boxGeometry args={[0.55, 0.25, 0.55]} />
         <meshStandardMaterial color={customization.hairColor} />
       </mesh>
 
-      {/* Torso / Shirt */}
       <mesh position={[0, 1.2, 0]}>
         <cylinderGeometry args={[0.6, 0.6, 1.6, 32]} />
         <meshStandardMaterial color={customization.shirtColor} />
       </mesh>
 
-      {/* Arms */}
       <mesh position={[-0.7, 1.3, 0]} rotation={[0, 0, -0.2]}>
         <cylinderGeometry args={[0.18, 0.18, 1.2, 32]} />
         <meshStandardMaterial color={customization.shirtColor} />
@@ -73,7 +67,6 @@ function Real3DCharacter({ customization }: { customization: any }) {
         <meshStandardMaterial color={customization.shirtColor} />
       </mesh>
 
-      {/* Legs */}
       <mesh position={[-0.25, 0, 0]}>
         <cylinderGeometry args={[0.2, 0.2, 0.8, 32]} />
         <meshStandardMaterial color="#1e3a8a" />
@@ -85,6 +78,21 @@ function Real3DCharacter({ customization }: { customization: any }) {
     </group>
   );
 }
+
+const SafeCanvas = dynamic(
+  () => import('@react-three/fiber').then((mod) => {
+    const { Canvas } = mod;
+    return function Component({ children }: any) {
+      return <Canvas camera={{ position: [0, 1, 5], fov: 50 }}>{children}</Canvas>;
+    };
+  }),
+  { ssr: false }
+);
+
+const SafeOrbitControls = dynamic(
+  () => import('@react-three/drei').then((mod) => mod.OrbitControls),
+  { ssr: false }
+);
 
 export default function Onboarding({ onComplete }: { onComplete: (data: any) => void }) {
   const [lang, setLang] = useState<Language>('en'); 
@@ -259,16 +267,15 @@ export default function Onboarding({ onComplete }: { onComplete: (data: any) => 
       <div className="bg-white w-full max-w-3xl rounded-[2rem] shadow-[0_15px_40px_rgba(250,204,21,0.15)] border border-slate-200 flex flex-col md:flex-row overflow-hidden min-h-[500px] mt-12 relative">
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-600 via-red-500 to-yellow-400 z-10"></div>
 
-        {/* LIVE 3D REACT THREE FIBER CANVAS */}
         <div className="bg-slate-50 w-full md:w-5/12 p-8 flex flex-col items-center justify-center border-r border-slate-100 relative">
           <div className="w-full h-full min-h-[300px] flex-1 relative bg-gradient-to-b from-slate-200 to-slate-100 rounded-3xl overflow-hidden shadow-inner border-[4px] border-white mb-4">
             {mounted && (
-              <Canvas camera={{ position: [0, 1, 5], fov: 50 }}>
+              <SafeCanvas>
                 <ambientLight intensity={0.7} />
                 <directionalLight position={[5, 5, 5]} intensity={1.2} />
                 <Real3DCharacter customization={customization} />
-                <OrbitControls enableZoom={false} enablePan={false} minPolarAngle={Math.PI / 2.5} maxPolarAngle={Math.PI / 2.5} />
-              </Canvas>
+                <SafeOrbitControls enableZoom={false} enablePan={false} minPolarAngle={Math.PI / 2.5} maxPolarAngle={Math.PI / 2.5} />
+              </SafeCanvas>
             )}
           </div>
           <p className="font-bold text-slate-700 z-10">{username || '@username'}</p>
