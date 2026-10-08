@@ -11,7 +11,7 @@ interface Message {
 }
 
 export default function ChatModal({ onClose, updateWallet, updateEnergy, playerData }: any) {
-  const [activeApp, setActiveApp] = useState<'home' | 'messages' | 'bank' | 'career' | 'borsa'>('home');
+  const [activeApp, setActiveApp] = useState<'home' | 'messages' | 'bank' | 'career' | 'borsa' | 'housing' | 'social'>('home');
   
   // Chat State
   const [npc] = useState(generateRandomNPC());
@@ -25,6 +25,15 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
   // Career State
   const [currentJob, setCurrentJob] = useState<string>('Unemployed');
   const [jobIncome, setJobIncome] = useState<number>(0);
+
+  // Housing State
+  const [currentHome, setCurrentHome] = useState<string>('Bağcılar Studio');
+  const [weeklyRent, setWeeklyRent] = useState<number>(1500);
+
+  // Social Media State
+  const [followers, setFollowers] = useState<number>(1250);
+  const [posts, setPosts] = useState<string[]>(['Just moved to Türkiye Hayatı! 🚀']);
+  const [newPostText, setNewPostText] = useState<string>('');
 
   function generateRandomNPC() {
     const names = ["Emre", "Ayşe", "Tariq", "Fatma", "Ozan", "Leyla"];
@@ -124,6 +133,20 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
     }
   };
 
+  const rentHousing = (title: string, rentCost: number) => {
+    setCurrentHome(title);
+    setWeeklyRent(rentCost);
+    alert(`Successfully moved into ${title}! Weekly rent is set to ${rentCost.toLocaleString()} ₺.`);
+  };
+
+  const createPost = () => {
+    if (!newPostText.trim()) return;
+    setPosts([newPostText, ...posts]);
+    setFollowers(prev => prev + Math.floor(Math.random() * 500) + 100);
+    setNewPostText('');
+    alert("Post published successfully! Followers increased. 📈");
+  };
+
   return (
     <div className="fixed inset-0 bg-slate-900/80 flex items-center justify-center z-[100] p-4 backdrop-blur-sm">
       
@@ -150,36 +173,40 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
         {activeApp === 'home' && (
           <div className="flex-1 bg-gradient-to-b from-indigo-900 to-black w-full h-full flex flex-col relative pt-16 px-6">
              <div className="grid grid-cols-4 gap-4 mt-8">
-                {/* Messages App Icon */}
+                {/* Messages */}
                 <div onClick={() => setActiveApp('messages')} className="flex flex-col items-center gap-1 cursor-pointer hover:scale-105 transition-transform">
-                   <div className="w-14 h-14 bg-emerald-500 rounded-2xl flex items-center justify-center shadow-lg">
-                      <span className="text-white text-3xl">💬</span>
-                   </div>
+                   <div className="w-14 h-14 bg-emerald-500 rounded-2xl flex items-center justify-center shadow-lg"><span className="text-white text-3xl">💬</span></div>
                    <span className="text-white text-[10px] font-medium">Messages</span>
                 </div>
 
-                {/* Ziraat App Icon */}
+                {/* Ziraat Bank */}
                 <div onClick={() => setActiveApp('bank')} className="flex flex-col items-center gap-1 cursor-pointer hover:scale-105 transition-transform">
-                   <div className="w-14 h-14 bg-red-600 rounded-2xl flex items-center justify-center shadow-lg border border-red-500">
-                      <span className="text-white text-3xl font-serif font-black">Z</span>
-                   </div>
+                   <div className="w-14 h-14 bg-red-600 rounded-2xl flex items-center justify-center shadow-lg border border-red-500"><span className="text-white text-3xl font-serif font-black">Z</span></div>
                    <span className="text-white text-[10px] font-medium">Ziraat</span>
                 </div>
 
-                {/* Career App Icon */}
+                {/* Career */}
                 <div onClick={() => setActiveApp('career')} className="flex flex-col items-center gap-1 cursor-pointer hover:scale-105 transition-transform">
-                   <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
-                      <span className="text-white text-2xl">💼</span>
-                   </div>
+                   <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg"><span className="text-white text-2xl">💼</span></div>
                    <span className="text-white text-[10px] font-medium">Career</span>
                 </div>
 
-                {/* Borsa App Icon */}
+                {/* Stocks */}
                 <div onClick={() => setActiveApp('borsa')} className="flex flex-col items-center gap-1 cursor-pointer hover:scale-105 transition-transform">
-                   <div className="w-14 h-14 bg-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
-                      <span className="text-white text-2xl">📈</span>
-                   </div>
+                   <div className="w-14 h-14 bg-emerald-600 rounded-2xl flex items-center justify-center shadow-lg"><span className="text-white text-2xl">📈</span></div>
                    <span className="text-white text-[10px] font-medium">Stocks</span>
+                </div>
+
+                {/* Real Estate */}
+                <div onClick={() => setActiveApp('housing')} className="flex flex-col items-center gap-1 cursor-pointer hover:scale-105 transition-transform mt-2">
+                   <div className="w-14 h-14 bg-amber-600 rounded-2xl flex items-center justify-center shadow-lg"><span className="text-white text-2xl">🏠</span></div>
+                   <span className="text-white text-[10px] font-medium">Real Estate</span>
+                </div>
+
+                {/* Social Media */}
+                <div onClick={() => setActiveApp('social')} className="flex flex-col items-center gap-1 cursor-pointer hover:scale-105 transition-transform mt-2">
+                   <div className="w-14 h-14 bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg"><span className="text-white text-2xl">📸</span></div>
+                   <span className="text-white text-[10px] font-medium">Insta</span>
                 </div>
              </div>
 
@@ -250,9 +277,7 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
                        <p className="text-xs font-bold text-slate-800">Döner Shop Apprentice</p>
                        <p className="text-[10px] text-emerald-600 font-semibold">1,500 ₺ / week</p>
                      </div>
-                     <button onClick={() => applyForJob('Döner Shop Apprentice', 1500)} className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">
-                       Apply
-                     </button>
+                     <button onClick={() => applyForJob('Döner Shop Apprentice', 1500)} className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">Apply</button>
                   </div>
 
                   <div className="bg-white p-3.5 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm">
@@ -260,9 +285,7 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
                        <p className="text-xs font-bold text-slate-800">Junior Developer</p>
                        <p className="text-[10px] text-emerald-600 font-semibold">12,500 ₺ / week</p>
                      </div>
-                     <button onClick={() => applyForJob('Junior Developer', 12500)} className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">
-                       Apply
-                     </button>
+                     <button onClick={() => applyForJob('Junior Developer', 12500)} className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">Apply</button>
                   </div>
 
                   <div className="bg-white p-3.5 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm">
@@ -270,9 +293,7 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
                        <p className="text-xs font-bold text-slate-800">Holding Executive Trainee</p>
                        <p className="text-[10px] text-emerald-600 font-semibold">75,000 ₺ / week</p>
                      </div>
-                     <button onClick={() => applyForJob('Holding Executive Trainee', 75000)} className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">
-                       Apply
-                     </button>
+                     <button onClick={() => applyForJob('Holding Executive Trainee', 75000)} className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">Apply</button>
                   </div>
                </div>
             </div>
@@ -302,9 +323,7 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
                        <p className="text-xs font-bold text-slate-800">✈️ Turkish Airlines (THYAO)</p>
                        <p className="text-[10px] text-slate-500">Cost: 100,000 ₺ (2x Return)</p>
                      </div>
-                     <button onClick={() => tradeAsset(100000, 2, 'THYAO')} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">
-                       Invest
-                     </button>
+                     <button onClick={() => tradeAsset(100000, 2, 'THYAO')} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">Invest</button>
                   </div>
 
                   <div className="bg-white p-3.5 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm">
@@ -312,9 +331,7 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
                        <p className="text-xs font-bold text-slate-800">⚡ IPO Adventure</p>
                        <p className="text-[10px] text-slate-500">Cost: 500,000 ₺ (3x Return)</p>
                      </div>
-                     <button onClick={() => tradeAsset(500000, 3, 'IPO')} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">
-                       Invest
-                     </button>
+                     <button onClick={() => tradeAsset(500000, 3, 'IPO')} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">Invest</button>
                   </div>
 
                   <div className="bg-white p-3.5 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm">
@@ -322,9 +339,7 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
                        <p className="text-xs font-bold text-slate-800">🚀 Meme Coin Speculation</p>
                        <p className="text-[10px] text-slate-500">Cost: 1,000,000 ₺ (5x Return)</p>
                      </div>
-                     <button onClick={() => tradeAsset(1000000, 5, 'Meme Coin')} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">
-                       Invest
-                     </button>
+                     <button onClick={() => tradeAsset(1000000, 5, 'Meme Coin')} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">Invest</button>
                   </div>
                </div>
             </div>
@@ -332,7 +347,100 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
         )}
 
         {/* ======================= */}
-        {/* APP 5: MESSAGES         */}
+        {/* APP 5: REAL ESTATE      */}
+        {/* ======================= */}
+        {activeApp === 'housing' && (
+          <div className="flex-1 bg-white w-full h-full flex flex-col relative pt-12">
+            <div className="bg-amber-600 px-5 py-4 flex justify-between items-center shadow-md z-10">
+               <button onClick={() => setActiveApp('home')} className="text-white text-2xl font-light">‹</button>
+               <h1 className="text-white font-bold text-sm tracking-widest">REAL ESTATE</h1>
+               <div className="w-6"></div>
+            </div>
+            
+            <div className="p-5 flex-1 bg-slate-50 flex flex-col gap-4 overflow-y-auto">
+               <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+                  <p className="text-[10px] font-bold text-amber-600 uppercase">Current Residence</p>
+                  <p className="text-lg font-black text-amber-900 mt-1">{currentHome}</p>
+                  <p className="text-xs text-amber-700 mt-0.5">Weekly Rent: {weeklyRent.toLocaleString()} ₺</p>
+               </div>
+
+               <p className="text-xs font-bold text-slate-500 mt-2">Available Properties</p>
+               
+               <div className="space-y-3">
+                  <div className="bg-white p-3.5 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm">
+                     <div>
+                       <p className="text-xs font-bold text-slate-800">Bağcılar Studio</p>
+                       <p className="text-[10px] text-slate-500">1,500 ₺ / week</p>
+                     </div>
+                     <button onClick={() => rentHousing('Bağcılar Studio', 1500)} className="bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">Rent</button>
+                  </div>
+
+                  <div className="bg-white p-3.5 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm">
+                     <div>
+                       <p className="text-xs font-bold text-slate-800">Kadıköy Sea View Flat</p>
+                       <p className="text-[10px] text-slate-500">5,000 ₺ / week</p>
+                     </div>
+                     <button onClick={() => rentHousing('Kadıköy Sea View Flat', 5000)} className="bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">Rent</button>
+                  </div>
+
+                  <div className="bg-white p-3.5 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm">
+                     <div>
+                       <p className="text-xs font-bold text-slate-800">Etiler Luxury Residence</p>
+                       <p className="text-[10px] text-slate-500">15,000 ₺ / week</p>
+                     </div>
+                     <button onClick={() => rentHousing('Etiler Luxury Residence', 15000)} className="bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">Rent</button>
+                  </div>
+               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ======================= */}
+        {/* APP 6: SOCIAL MEDIA     */}
+        {/* ======================= */}
+        {activeApp === 'social' && (
+          <div className="flex-1 bg-white w-full h-full flex flex-col relative pt-12">
+            <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-5 py-4 flex justify-between items-center shadow-md z-10">
+               <button onClick={() => setActiveApp('home')} className="text-white text-2xl font-light">‹</button>
+               <h1 className="text-white font-bold text-sm tracking-widest">INSTAGRAM</h1>
+               <div className="w-6"></div>
+            </div>
+            
+            <div className="p-5 flex-1 bg-slate-50 flex flex-col gap-4 overflow-y-auto">
+               <div className="bg-white border border-slate-200 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+                  <div>
+                    <p className="text-xs font-bold text-slate-800">{playerData?.username || '@istanbul_boss'}</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5">{followers.toLocaleString()} Followers</p>
+                  </div>
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-yellow-400 to-purple-600 flex items-center justify-center text-white font-bold text-sm">📸</div>
+               </div>
+
+               <div className="flex gap-2">
+                 <input 
+                   type="text" 
+                   value={newPostText}
+                   onChange={(e) => setNewPostText(e.target.value)}
+                   placeholder="Share your hustle..."
+                   className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-pink-500"
+                 />
+                 <button onClick={createPost} className="bg-pink-600 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm">Post</button>
+               </div>
+
+               <div className="space-y-3">
+                  <p className="text-xs font-bold text-slate-500">Your Feed</p>
+                  {posts.map((post, idx) => (
+                    <div key={idx} className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm">
+                       <p className="text-xs text-slate-800 font-medium">{post}</p>
+                       <p className="text-[9px] text-slate-400 mt-2">Just now • Türkiye Hayatı</p>
+                    </div>
+                  ))}
+               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ======================= */}
+        {/* APP 7: MESSAGES         */}
         {/* ======================= */}
         {activeApp === 'messages' && (
           <div className="flex-1 bg-black flex flex-col relative pt-10">
@@ -397,15 +505,9 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
             <div className="bg-slate-900 px-4 pt-3 pb-8 border-t border-slate-800 z-30">
               {!interactionDone ? (
                 <div className="flex flex-col gap-2">
-                  <button onClick={() => handleAction("friendly")} className="w-full bg-slate-800 hover:bg-slate-700 text-blue-400 rounded-xl py-3 text-[14px] font-semibold transition-colors">
-                    Say Hello (+Social)
-                  </button>
-                  <button onClick={() => handleAction("bill")} className="w-full bg-slate-800 hover:bg-slate-700 text-amber-500 rounded-xl py-3 text-[14px] font-semibold transition-colors">
-                    Ask for Money
-                  </button>
-                  <button onClick={() => handleAction("scam")} className="w-full bg-rose-950/30 hover:bg-rose-900/40 text-rose-500 border border-rose-900/50 rounded-xl py-3 text-[14px] font-semibold transition-colors">
-                    Insider Trading Scam
-                  </button>
+                  <button onClick={() => handleAction("friendly")} className="w-full bg-slate-800 hover:bg-slate-700 text-blue-400 rounded-xl py-3 text-[14px] font-semibold transition-colors">Say Hello (+Social)</button>
+                  <button onClick={() => handleAction("bill")} className="w-full bg-slate-800 hover:bg-slate-700 text-amber-500 rounded-xl py-3 text-[14px] font-semibold transition-colors">Ask for Money</button>
+                  <button onClick={() => handleAction("scam")} className="w-full bg-rose-950/30 hover:bg-rose-900/40 text-rose-500 border border-rose-900/50 rounded-xl py-3 text-[14px] font-semibold transition-colors">Insider Trading Scam</button>
                 </div>
               ) : (
                 <div className="flex gap-2">
