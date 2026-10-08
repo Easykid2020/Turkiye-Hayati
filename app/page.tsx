@@ -3,12 +3,12 @@
 import { useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import ChatModal from './ChatModal';
+import Onboarding from './Onboarding';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
 
-// Extracted from your previous setup, but adapted for the new UI
 type Language = 'en' | 'tr';
 type Tab = 'home' | 'map' | 'phone';
 type TileType = 'road' | 'grass' | 'house' | 'shop' | 'club' | 'mosque' | 'hospital' | 'office' | 'estate' | 'airport' | 'cafe' | 'gym';
@@ -17,6 +17,7 @@ export default function GameHome() {
   const [lang, setLang] = useState<Language>('tr');
   const [activeTab, setActiveTab] = useState<Tab>('map');
   const [isPhoneOpen, setIsPhoneOpen] = useState<boolean>(false);
+  const [gameStarted, setGameStarted] = useState<boolean>(false);
   
   const [player, setPlayer] = useState({
     money: 5000000, 
@@ -28,7 +29,23 @@ export default function GameHome() {
     y: 0
   });
 
-  // Calculate mood based on happiness like the video
+  // Intercept the game screen with Onboarding if the game hasn't started
+  if (!gameStarted) {
+    return (
+      <Onboarding 
+        onComplete={(onboardingData) => {
+          setPlayer(prev => ({
+            ...prev,
+            money: onboardingData.money,
+            location: onboardingData.location
+          }));
+          setGameStarted(true);
+        }} 
+      />
+    );
+  }
+
+  // Calculate mood based on happiness
   const getMood = () => {
     if (player.happiness > 8000) return { emoji: '🤩', text: 'Blessed', color: 'text-emerald-500' };
     if (player.happiness > 5000) return { emoji: '😊', text: 'Happy', color: 'text-emerald-400' };
@@ -61,7 +78,7 @@ export default function GameHome() {
   return (
     <main className="min-h-screen bg-[#f0f4f8] text-slate-800 flex flex-col font-sans overflow-hidden relative">
       
-      {/* FLOATING TOP STATUS BAR (Exact Match to Video) */}
+      {/* FLOATING TOP STATUS BAR */}
       <header className="fixed top-4 left-1/2 -translate-x-1/2 z-40 w-[95%] max-w-4xl flex justify-between items-center pointer-events-none">
         
         {/* Left Side: Time, Mood, Online */}
@@ -109,7 +126,7 @@ export default function GameHome() {
         </div>
       </div>
 
-      {/* MAIN GAME CANVAS (Simulating the isometric plane for now) */}
+      {/* MAIN GAME CANVAS */}
       <div className="flex-1 w-full h-full flex items-center justify-center p-4 pt-24 pb-32">
         <div className="bg-white p-8 rounded-[3rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-white relative overflow-hidden transform perspective-1000 rotateX-12">
            <div className="flex flex-col gap-1 items-center">
@@ -138,7 +155,7 @@ export default function GameHome() {
         </div>
       </div>
 
-      {/* BOTTOM NAVIGATION DOCK (Exact Match to Video) */}
+      {/* BOTTOM NAVIGATION DOCK */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
         <div className="bg-white/95 backdrop-blur-xl px-2 py-2 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-200 flex items-center gap-2">
           
