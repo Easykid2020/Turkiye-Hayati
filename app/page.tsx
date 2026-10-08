@@ -10,19 +10,12 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
 
 type Tab = 'home' | 'map' | 'phone';
-type LocationType = {
-  id: string;
-  name: string;
-  district: string;
-  icon: string;
-  desc: string;
-  color: string;
-};
 
 export default function GameHome() {
   const [activeTab, setActiveTab] = useState<Tab>('map');
   const [isPhoneOpen, setIsPhoneOpen] = useState<boolean>(false);
   const [gameStarted, setGameStarted] = useState<boolean>(false);
+  const [language, setLanguage] = useState<'en' | 'tr'>('en');
   
   const [player, setPlayer] = useState({
     username: '@istanbul_boss',
@@ -34,18 +27,47 @@ export default function GameHome() {
     rent: 5000
   });
 
-  // Locations across Türkiye
-  const locations: LocationType[] = [
-    { id: 'kadikoy', name: 'Kadıköy Sahil', district: 'İstanbul', icon: '⛵', desc: 'Deniz havası, sokak müzisyenleri ve kafeler.', color: 'bg-blue-100 border-blue-300' },
-    { id: 'besiktas', name: 'Beşiktaş Çarşı', district: 'İstanbul', icon: '🦅', desc: 'Kartal heykeli önü, sokak lezzetleri ve kalabalık.', color: 'bg-red-100 border-red-300' },
-    { id: 'kizilay', name: 'Kızılay Meydanı', district: 'Ankara', icon: '🚇', desc: 'Başkentin kalbi, Güvenpark ve buluşma noktası.', color: 'bg-amber-100 border-amber-300' },
-    { id: 'bagcilar', name: 'Bağcılar Sokak', district: 'İstanbul', icon: '🛵', desc: 'Sokak kültürü, ucuz kira ve hızlı hustle.', color: 'bg-slate-200 border-slate-400' },
+  const content = {
+    en: {
+      activeLocation: 'ACTIVE LOCATION',
+      eatFood: 'Eat Döner',
+      eatDesc: 'Satisfy hunger & gain energy',
+      homeTab: 'Home',
+      mapTab: 'Map',
+      phoneTab: 'Phone',
+      rentLabel: 'Rent',
+      week: 'week',
+      health: 'Health',
+      energy: 'Energy'
+    },
+    tr: {
+      activeLocation: 'AKTİF KONUM',
+      eatFood: 'Döner Ye',
+      eatDesc: 'Açlığını gider, enerji topla',
+      homeTab: 'Ev',
+      mapTab: 'Harita',
+      phoneTab: 'Telefon',
+      rentLabel: 'Kira',
+      week: 'hafta',
+      health: 'Sağlık',
+      energy: 'Enerji'
+    }
+  };
+
+  const t = content[language];
+
+  const locations = [
+    { id: 'kadikoy', name: 'Kadıköy Sahil', district: 'Istanbul', icon: '⛵', desc: { en: 'Sea breeze, street musicians, and cafes.', tr: 'Deniz havası, sokak müzisyenleri ve kafeler.' }, color: 'bg-blue-100 border-blue-300' },
+    { id: 'besiktas', name: 'Beşiktaş Çarşı', district: 'Istanbul', icon: '🦅', desc: { en: 'Crowded square, local street food & culture.', tr: 'Kartal heykeli önü, sokak lezzetleri ve kalabalık.' }, color: 'bg-red-100 border-red-300' },
+    { id: 'kizilay', name: 'Kızılay Square', district: 'Ankara', icon: '🚇', desc: { en: 'Heart of the capital, Güvenpark and hub.', tr: 'Başkentin kalbi, Güvenpark ve buluşma noktası.' }, color: 'bg-amber-100 border-amber-300' },
+    { id: 'bagcilar', name: 'Bağcılar Street', district: 'Istanbul', icon: '🛵', desc: { en: 'Hard start, street hustle rules apply.', tr: 'Sokak kültürü, ucuz kira ve hızlı hustle.' }, color: 'bg-slate-200 border-slate-400' },
   ];
 
   if (!gameStarted) {
     return (
       <Onboarding 
         onComplete={(onboardingData) => {
+          setLanguage(onboardingData.lang || 'en');
           setPlayer(prev => ({
             ...prev,
             username: `@${onboardingData.username}`,
@@ -60,9 +82,9 @@ export default function GameHome() {
   }
 
   const getMood = () => {
-    if (player.happiness > 8000) return { emoji: '🤩', text: 'Blessed', color: 'text-emerald-500' };
-    if (player.happiness > 5000) return { emoji: '😊', text: 'Happy', color: 'text-emerald-400' };
-    return { emoji: '😐', text: 'Okay', color: 'text-amber-500' };
+    if (player.happiness > 8000) return { emoji: '🤩', text: language === 'en' ? 'Blessed' : 'Harika', color: 'text-emerald-500' };
+    if (player.happiness > 5000) return { emoji: '😊', text: language === 'en' ? 'Happy' : 'Mutlu', color: 'text-emerald-400' };
+    return { emoji: '😐', text: language === 'en' ? 'Okay' : 'Normal', color: 'text-amber-500' };
   };
 
   const mood = getMood();
@@ -75,7 +97,7 @@ export default function GameHome() {
       <header className="fixed top-4 left-1/2 -translate-x-1/2 z-40 w-[95%] max-w-4xl flex justify-between items-center pointer-events-none">
         <div className="bg-white/90 backdrop-blur-md px-4 py-2.5 rounded-full shadow-sm border border-slate-200 flex items-center gap-4 text-xs font-semibold pointer-events-auto">
           <span className="flex items-center gap-1.5 text-slate-600">
-            ☀️ Pzt 5 - 16:40
+            ☀️ Mon 5 - 16:40
           </span>
           <div className="w-px h-4 bg-slate-300"></div>
           <span className={`flex items-center gap-1.5 ${mood.color}`}>
@@ -100,11 +122,11 @@ export default function GameHome() {
 
       {/* LEFT SIDE ACTION QUEUE */}
       <div className="fixed top-20 left-4 z-40 flex flex-col gap-2 pointer-events-none">
-        <div className="bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-3 pointer-events-auto w-52 cursor-pointer hover:bg-slate-50 transition-colors">
+        <div className="bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-3 pointer-events-auto w-56 cursor-pointer hover:bg-slate-50 transition-colors">
           <div className="bg-red-100 w-8 h-8 rounded-full flex items-center justify-center text-xl">🍽️</div>
           <div>
-            <p className="text-xs font-bold text-slate-800 leading-tight">Döner Ye</p>
-            <p className="text-[10px] text-slate-500">Açlığını gider, enerji topla</p>
+            <p className="text-xs font-bold text-slate-800 leading-tight">{t.eatFood}</p>
+            <p className="text-[10px] text-slate-500">{t.eatDesc}</p>
           </div>
         </div>
       </div>
@@ -114,9 +136,9 @@ export default function GameHome() {
         {activeTab === 'map' && (
           <div className="bg-white/80 backdrop-blur-md p-8 rounded-[3rem] shadow-xl border border-white max-w-2xl w-full flex flex-col items-center">
             <div className="text-center mb-6">
-              <span className="bg-red-100 text-red-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Aktif Konum</span>
+              <span className="bg-red-100 text-red-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">{t.activeLocation}</span>
               <h2 className="text-3xl font-black text-slate-800 mt-2">{currentLocation.name}</h2>
-              <p className="text-sm text-slate-500">{currentLocation.desc}</p>
+              <p className="text-sm text-slate-500">{currentLocation.desc[language]}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
@@ -140,12 +162,12 @@ export default function GameHome() {
         {activeTab === 'home' && (
           <div className="bg-white/80 backdrop-blur-md p-8 rounded-[3rem] shadow-xl border border-white max-w-lg w-full text-center">
             <div className="w-20 h-20 bg-red-600 rounded-3xl mx-auto flex items-center justify-center text-4xl shadow-lg mb-4">🏠</div>
-            <h2 className="text-2xl font-black text-slate-800">Ev Sahnesi</h2>
-            <p className="text-xs text-slate-500 mt-1">Kira: {player.rent.toLocaleString()} ₺ / hafta</p>
+            <h2 className="text-2xl font-black text-slate-800">{language === 'en' ? 'Residence' : 'Ev Sahnesi'}</h2>
+            <p className="text-xs text-slate-500 mt-1">{t.rentLabel}: {player.rent.toLocaleString()} ₺ / {t.week}</p>
             <div className="mt-6 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-left space-y-2">
-              <p className="text-xs font-bold text-slate-700">Kullanıcı: {player.username}</p>
-              <p className="text-xs font-bold text-slate-700">Sağlık: {player.health} / 10000</p>
-              <p className="text-xs font-bold text-slate-700">Enerji: {player.energy} / 10000</p>
+              <p className="text-xs font-bold text-slate-700">Username: {player.username}</p>
+              <p className="text-xs font-bold text-slate-700">{t.health}: {player.health} / 10000</p>
+              <p className="text-xs font-bold text-slate-700">{t.energy}: {player.energy} / 10000</p>
             </div>
           </div>
         )}
@@ -160,7 +182,7 @@ export default function GameHome() {
             className={`flex flex-col items-center justify-center w-20 h-14 rounded-full transition-colors ${activeTab === 'home' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
           >
             <svg className="w-5 h-5 mb-0.5" fill={activeTab === 'home' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-            <span className="text-[10px] font-medium">Ev</span>
+            <span className="text-[10px] font-medium">{t.homeTab}</span>
           </button>
 
           <button 
@@ -168,7 +190,7 @@ export default function GameHome() {
             className={`flex flex-col items-center justify-center w-20 h-14 rounded-full transition-colors ${activeTab === 'map' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
           >
             <svg className="w-5 h-5 mb-0.5" fill={activeTab === 'map' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
-            <span className="text-[10px] font-medium">Harita</span>
+            <span className="text-[10px] font-medium">{t.mapTab}</span>
           </button>
 
           <button 
@@ -176,7 +198,7 @@ export default function GameHome() {
             className={`flex flex-col items-center justify-center w-20 h-14 rounded-full transition-colors ${isPhoneOpen ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
           >
             <svg className="w-5 h-5 mb-0.5" fill={isPhoneOpen ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-            <span className="text-[10px] font-medium">Telefon</span>
+            <span className="text-[10px] font-medium">{t.phoneTab}</span>
           </button>
 
         </div>
