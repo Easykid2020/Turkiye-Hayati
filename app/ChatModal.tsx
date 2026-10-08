@@ -3,12 +3,21 @@
 import React, { useState } from 'react';
 
 export default function ChatModal({ onClose, playerData, updateWallet, updateEnergy }: any) {
-  const [activeApp, setActiveApp] = useState<'home' | 'bank' | 'career' | 'stocks' | 'market' | 'lcw' | 'houses' | 'cars' | 'forbes' | 'police' | 'messages' | 'masak' | 'fantasy' | 'taxi'>('home');
+  const [activeApp, setActiveApp] = useState<'home' | 'bank' | 'career' | 'stocks' | 'market' | 'lcw' | 'houses' | 'cars' | 'forbes' | 'police' | 'messages' | 'masak' | 'fantasy' | 'taxi' | 'skills' | 'radio'>('home');
   
   const [isArrested, setIsArrested] = useState(false);
   const [arrestFine, setArrestFine] = useState(20000);
   const [masakFlagged, setMasakFlagged] = useState(true);
   const [taxPenalty, setTaxPenalty] = useState(150000);
+
+  const [skills, setSkills] = useState({
+    coding: 1,
+    fitness: 1,
+    cooking: 1,
+    charisma: 1
+  });
+
+  const [currentStation, setCurrentStation] = useState('Kral FM (Arabesque & Pop)');
 
   const [jobs] = useState([
     { id: 'intern', title: 'Computer Engineering Intern', salary: 15000, desc: 'Coding, Verilog & debugging at Teknopark' },
@@ -117,11 +126,19 @@ export default function ChatModal({ onClose, playerData, updateWallet, updateEne
                 </button>
                 <button onClick={() => setActiveApp('fantasy')} className="bg-emerald-600/20 border border-emerald-500/40 p-3 rounded-2xl flex flex-col items-center gap-1 hover:bg-emerald-600/30 transition-all">
                   <span className="text-2xl">⚽</span>
-                  <span className="text-[10px] font-bold">Süper Lig Fantasy</span>
+                  <span className="text-[10px] font-bold">Süper Lig</span>
                 </button>
                 <button onClick={() => setActiveApp('taxi')} className="bg-yellow-500/20 border border-yellow-400/40 p-3 rounded-2xl flex flex-col items-center gap-1 hover:bg-yellow-500/30 transition-all">
                   <span className="text-2xl">🚕</span>
                   <span className="text-[10px] font-bold">BiTaksi</span>
+                </button>
+                <button onClick={() => setActiveApp('skills')} className="bg-teal-600/20 border border-teal-500/40 p-3 rounded-2xl flex flex-col items-center gap-1 hover:bg-teal-600/30 transition-all">
+                  <span className="text-2xl">💡</span>
+                  <span className="text-[10px] font-bold">Skills Hub</span>
+                </button>
+                <button onClick={() => setActiveApp('radio')} className="bg-pink-600/20 border border-pink-500/40 p-3 rounded-2xl flex flex-col items-center gap-1 hover:bg-pink-600/30 transition-all">
+                  <span className="text-2xl">📻</span>
+                  <span className="text-[10px] font-bold">Kral FM</span>
                 </button>
                 <button onClick={() => setActiveApp('messages')} className="bg-sky-600/20 border border-sky-500/40 p-3 rounded-2xl flex flex-col items-center gap-1 hover:bg-sky-600/30 transition-all">
                   <span className="text-2xl">💬</span>
@@ -450,6 +467,58 @@ export default function ChatModal({ onClose, playerData, updateWallet, updateEne
                     <button onClick={() => alert("BiTaksi booked! You arrived safely.")} className="bg-yellow-500 hover:bg-yellow-400 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-bold">
                       Book Ride
                     </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeApp === 'skills' && (
+            <div className="space-y-4">
+              <button onClick={() => setActiveApp('home')} className="text-xs text-red-400 font-bold mb-2">← Back to Home</button>
+              <div className="bg-teal-950/60 border border-teal-500/40 p-4 rounded-2xl text-center mb-3">
+                <span className="text-3xl">💡</span>
+                <h4 className="text-sm font-black mt-2">Skills Hub & Self-Improvement</h4>
+                <p className="text-[10px] text-teal-200 mt-1">Level up your abilities to unlock elite career opportunities</p>
+              </div>
+              <div className="space-y-2.5">
+                {[
+                  { key: 'coding', name: 'Coding (Yazılım)', lvl: skills.coding },
+                  { key: 'fitness', name: 'Fitness & Health', lvl: skills.fitness },
+                  { key: 'cooking', name: 'Turkish Cuisine', lvl: skills.cooking },
+                  { key: 'charisma', name: 'Charisma & Social', lvl: skills.charisma }
+                ].map(s => (
+                  <div key={s.key} className="bg-slate-800/80 p-3 rounded-2xl border border-slate-700 flex justify-between items-center">
+                    <div>
+                      <p className="text-xs font-bold">{s.name}</p>
+                      <p className="text-[10px] text-teal-400 font-bold">Level {s.lvl} / 10</p>
+                    </div>
+                    <button onClick={() => {
+                      setSkills(prev => ({ ...prev, [s.key]: Math.min(10, (prev as any)[s.key] + 1) }));
+                      updateEnergy(-300);
+                      alert(`Trained ${s.name}! Level increased.`);
+                    }} className="bg-teal-600 hover:bg-teal-500 px-3.5 py-2 rounded-xl text-xs font-bold">
+                      Train (+1 Lvl)
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeApp === 'radio' && (
+            <div className="space-y-4">
+              <button onClick={() => setActiveApp('home')} className="text-xs text-red-400 font-bold mb-2">← Back to Home</button>
+              <div className="bg-pink-950/60 border border-pink-500/40 p-4 rounded-2xl text-center mb-3">
+                <span className="text-3xl">📻</span>
+                <h4 className="text-sm font-black mt-2">Kral FM & TRT Radyo</h4>
+                <p className="text-[10px] text-pink-200 mt-1">Playing live from Istanbul & Ankara</p>
+              </div>
+              <div className="space-y-2.5">
+                {['Kral FM (Arabesque & Pop)', 'Power Türk (Turkish Pop)', 'Metro FM (Global Hits)', 'TRT Nağme (Classical Turkish)'].map(station => (
+                  <div key={station} onClick={() => { setCurrentStation(station); alert(`Tuned in to ${station}!`); }} className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex justify-between items-center ${currentStation === station ? 'bg-pink-600/30 border-pink-500' : 'bg-slate-800/80 border-slate-700 hover:bg-slate-800'}`}>
+                    <p className="text-xs font-bold">{station}</p>
+                    {currentStation === station && <span className="text-xs text-pink-400 font-bold">▶ Playing</span>}
                   </div>
                 ))}
               </div>
