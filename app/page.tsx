@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
 import { createClient } from '@supabase/supabase-js';
 import ChatModal from './ChatModal';
 import Onboarding from './Onboarding';
@@ -10,6 +12,55 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
 
 type Tab = 'home' | 'map' | 'phone';
+
+function CityWorldMap({ currentLocation, onSelectLocation }: { currentLocation: string, onSelectLocation: (id: string) => void }) {
+  return (
+    <group position={[0, -1, 0]}>
+      {/* Ground Grid */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+        <planeGeometry args={[30, 30]} />
+        <meshStandardMaterial color="#cbd5e1" />
+      </mesh>
+
+      {/* Kadıköy District Block */}
+      <group position={[-3, 0, -3]} onClick={() => onSelectLocation('kadikoy')}>
+        <mesh position={[0, 0.5, 0]}>
+          <boxGeometry args={[3, 1, 3]} />
+          <meshStandardMaterial color={currentLocation === 'kadikoy' ? '#dc2626' : '#3b82f6'} />
+        </mesh>
+      </group>
+
+      {/* Kızılay District Block & Billboard Placeholder */}
+      <group position={[3, 0, -3]} onClick={() => onSelectLocation('kizilay')}>
+        <mesh position={[0, 0.7, 0]}>
+          <boxGeometry args={[3, 1.4, 3]} />
+          <meshStandardMaterial color={currentLocation === 'kizilay' ? '#dc2626' : '#f59e0b'} />
+        </mesh>
+        {/* Billboard Ad Mesh */}
+        <mesh position={[0, 1.8, 0]}>
+          <boxGeometry args={[2.2, 0.8, 0.2]} />
+          <meshStandardMaterial color="#111827" />
+        </mesh>
+      </group>
+
+      {/* Beşiktaş District Block */}
+      <group position={[-3, 0, 3]} onClick={() => onSelectLocation('besiktas')}>
+        <mesh position={[0, 0.6, 0]}>
+          <boxGeometry args={[3, 1.2, 3]} />
+          <meshStandardMaterial color={currentLocation === 'besiktas' ? '#dc2626' : '#10b981'} />
+        </mesh>
+      </group>
+
+      {/* Bağcılar District Block */}
+      <group position={[3, 0, 3]} onClick={() => onSelectLocation('bagcilar')}>
+        <mesh position={[0, 0.4, 0]}>
+          <boxGeometry args={[3, 0.8, 3]} />
+          <meshStandardMaterial color={currentLocation === 'bagcilar' ? '#dc2626' : '#64748b'} />
+        </mesh>
+      </group>
+    </group>
+  );
+}
 
 export default function GameHome() {
   const [activeTab, setActiveTab] = useState<Tab>('map');
@@ -29,11 +80,11 @@ export default function GameHome() {
 
   const content = {
     en: {
-      activeLocation: 'ACTIVE LOCATION',
+      activeLocation: 'ACTIVE DISTRICT',
       eatFood: 'Eat Döner',
       eatDesc: 'Satisfy hunger & gain energy',
       homeTab: 'Home',
-      mapTab: 'Map',
+      mapTab: '3D Map',
       phoneTab: 'Phone',
       rentLabel: 'Rent',
       week: 'week',
@@ -41,11 +92,11 @@ export default function GameHome() {
       energy: 'Energy'
     },
     tr: {
-      activeLocation: 'AKTİF KONUM',
+      activeLocation: 'AKTİF BÖLGE',
       eatFood: 'Döner Ye',
       eatDesc: 'Açlığını gider, enerji topla',
       homeTab: 'Ev',
-      mapTab: 'Harita',
+      mapTab: '3D Harita',
       phoneTab: 'Telefon',
       rentLabel: 'Kira',
       week: 'hafta',
@@ -57,10 +108,10 @@ export default function GameHome() {
   const t = content[language];
 
   const locations = [
-    { id: 'kadikoy', name: 'Kadıköy Sahil', district: 'Istanbul', icon: '⛵', desc: { en: 'Sea breeze, street musicians, and cafes.', tr: 'Deniz havası, sokak müzisyenleri ve kafeler.' }, color: 'bg-blue-100 border-blue-300' },
-    { id: 'besiktas', name: 'Beşiktaş Çarşı', district: 'Istanbul', icon: '🦅', desc: { en: 'Crowded square, local street food & culture.', tr: 'Kartal heykeli önü, sokak lezzetleri ve kalabalık.' }, color: 'bg-red-100 border-red-300' },
-    { id: 'kizilay', name: 'Kızılay Square', district: 'Ankara', icon: '🚇', desc: { en: 'Heart of the capital, Güvenpark and hub.', tr: 'Başkentin kalbi, Güvenpark ve buluşma noktası.' }, color: 'bg-amber-100 border-amber-300' },
-    { id: 'bagcilar', name: 'Bağcılar Street', district: 'Istanbul', icon: '🛵', desc: { en: 'Hard start, street hustle rules apply.', tr: 'Sokak kültürü, ucuz kira ve hızlı hustle.' }, color: 'bg-slate-200 border-slate-400' },
+    { id: 'kadikoy', name: 'Kadıköy Sahil', district: 'Istanbul', icon: '⛵', desc: { en: 'Sea breeze, street musicians, and cafes.', tr: 'Deniz havası, sokak müzisyenleri ve kafeler.' } },
+    { id: 'besiktas', name: 'Beşiktaş Çarşı', district: 'Istanbul', icon: '🦅', desc: { en: 'Crowded square, local street food & culture.', tr: 'Kartal heykeli önü, sokak lezzetleri ve kalabalık.' } },
+    { id: 'kizilay', name: 'Kızılay Square (Billboard Zone)', district: 'Ankara', icon: '🚇', desc: { en: 'Heart of the capital with custom ad billboards.', tr: 'Başkentin kalbi ve reklam tabelaları.' } },
+    { id: 'bagcilar', name: 'Bağcılar Street', district: 'Istanbul', icon: '🛵', desc: { en: 'Hard start, street hustle rules apply.', tr: 'Sokak kültürü, ucuz kira ve hızlı hustle.' } },
   ];
 
   if (!gameStarted) {
@@ -96,13 +147,9 @@ export default function GameHome() {
       {/* FLOATING TOP STATUS BAR */}
       <header className="fixed top-4 left-1/2 -translate-x-1/2 z-40 w-[95%] max-w-4xl flex justify-between items-center pointer-events-none">
         <div className="bg-white/90 backdrop-blur-md px-4 py-2.5 rounded-full shadow-sm border border-slate-200 flex items-center gap-4 text-xs font-semibold pointer-events-auto">
-          <span className="flex items-center gap-1.5 text-slate-600">
-            ☀️ Mon 5 - 16:40
-          </span>
+          <span className="flex items-center gap-1.5 text-slate-600">☀️ Mon 5 - 16:40</span>
           <div className="w-px h-4 bg-slate-300"></div>
-          <span className={`flex items-center gap-1.5 ${mood.color}`}>
-            {mood.emoji} {mood.text}
-          </span>
+          <span className={`flex items-center gap-1.5 ${mood.color}`}>{mood.emoji} {mood.text}</span>
           <div className="w-px h-4 bg-slate-300"></div>
           <span className="flex items-center gap-1.5 text-slate-500">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
@@ -111,12 +158,8 @@ export default function GameHome() {
         </div>
 
         <div className="bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full shadow-sm border border-slate-200 flex items-center gap-3 pointer-events-auto">
-          <span className="font-bold text-slate-800 tracking-tight text-sm">
-            {player.money.toLocaleString()} ₺
-          </span>
-          <button className="bg-red-600 hover:bg-red-500 text-white w-7 h-7 rounded-full flex items-center justify-center font-black text-lg transition-transform active:scale-95 shadow-sm">
-            +
-          </button>
+          <span className="font-bold text-slate-800 tracking-tight text-sm">{player.money.toLocaleString()} ₺</span>
+          <button className="bg-red-600 hover:bg-red-500 text-white w-7 h-7 rounded-full flex items-center justify-center font-black text-lg transition-transform active:scale-95 shadow-sm">+</button>
         </div>
       </header>
 
@@ -131,30 +174,27 @@ export default function GameHome() {
         </div>
       </div>
 
-      {/* MAIN CONTENT AREA */}
+      {/* MAIN CONTENT AREA: 3D WORLD MAP */}
       <div className="flex-1 w-full h-full flex items-center justify-center p-4 pt-24 pb-32">
         {activeTab === 'map' && (
-          <div className="bg-white/80 backdrop-blur-md p-8 rounded-[3rem] shadow-xl border border-white max-w-2xl w-full flex flex-col items-center">
-            <div className="text-center mb-6">
+          <div className="bg-white/90 backdrop-blur-md p-6 rounded-[3rem] shadow-xl border border-white max-w-3xl w-full flex flex-col items-center">
+            <div className="text-center mb-4">
               <span className="bg-red-100 text-red-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">{t.activeLocation}</span>
-              <h2 className="text-3xl font-black text-slate-800 mt-2">{currentLocation.name}</h2>
-              <p className="text-sm text-slate-500">{currentLocation.desc[language]}</p>
+              <h2 className="text-2xl font-black text-slate-800 mt-1">{currentLocation.name}</h2>
+              <p className="text-xs text-slate-500">{currentLocation.desc[language]}</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-              {locations.map(loc => (
-                <button
-                  key={loc.id}
-                  onClick={() => setPlayer(p => ({ ...p, location: loc.id }))}
-                  className={`p-4 rounded-2xl border-2 transition-all flex items-center gap-4 text-left ${player.location === loc.id ? 'border-red-600 bg-red-50 shadow-md' : 'border-slate-100 bg-white hover:border-slate-300'}`}
-                >
-                  <span className="text-3xl">{loc.icon}</span>
-                  <div>
-                    <h3 className="font-bold text-slate-800 text-sm">{loc.name}</h3>
-                    <p className="text-[11px] text-slate-500">{loc.district}</p>
-                  </div>
-                </button>
-              ))}
+            {/* Interactive 3D Canvas Viewport */}
+            <div className="w-full h-72 bg-gradient-to-b from-slate-900 to-slate-800 rounded-3xl overflow-hidden shadow-inner border-4 border-white relative">
+              <Canvas camera={{ position: [5, 5, 5], fov: 60 }}>
+                <ambientLight intensity={0.8} />
+                <directionalLight position={[10, 20, 10]} intensity={1.5} />
+                <CityWorldMap currentLocation={player.location} onSelectLocation={(id) => setPlayer(p => ({ ...p, location: id }))} />
+                <OrbitControls enableZoom={true} enablePan={true} maxPolarAngle={Math.PI / 2.2} />
+              </Canvas>
+              <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md text-white text-[10px] px-3 py-1 rounded-full pointer-events-none">
+                🗺️ Click district blocks to travel instantly
+              </div>
             </div>
           </div>
         )}
@@ -181,7 +221,6 @@ export default function GameHome() {
             onClick={() => setActiveTab('home')}
             className={`flex flex-col items-center justify-center w-20 h-14 rounded-full transition-colors ${activeTab === 'home' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
           >
-            <svg className="w-5 h-5 mb-0.5" fill={activeTab === 'home' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
             <span className="text-[10px] font-medium">{t.homeTab}</span>
           </button>
 
@@ -189,7 +228,6 @@ export default function GameHome() {
             onClick={() => setActiveTab('map')}
             className={`flex flex-col items-center justify-center w-20 h-14 rounded-full transition-colors ${activeTab === 'map' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
           >
-            <svg className="w-5 h-5 mb-0.5" fill={activeTab === 'map' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
             <span className="text-[10px] font-medium">{t.mapTab}</span>
           </button>
 
@@ -197,7 +235,6 @@ export default function GameHome() {
             onClick={() => setIsPhoneOpen(true)}
             className={`flex flex-col items-center justify-center w-20 h-14 rounded-full transition-colors ${isPhoneOpen ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
           >
-            <svg className="w-5 h-5 mb-0.5" fill={isPhoneOpen ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
             <span className="text-[10px] font-medium">{t.phoneTab}</span>
           </button>
 
