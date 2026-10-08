@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { createClient } from '@supabase/supabase-js';
@@ -24,13 +24,11 @@ function TürkiyeMapScene({ onSelectVenue }: { onSelectVenue: (venue: any) => vo
 
   return (
     <group position={[0, -1, 0]}>
-      {/* City Ground Grid */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
         <planeGeometry args={[28, 20]} />
         <meshStandardMaterial color="#cbd5e1" roughness={0.9} />
       </mesh>
 
-      {/* Main Asphalt Roads */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
         <planeGeometry args={[24, 3]} />
         <meshStandardMaterial color="#1e293b" />
@@ -40,7 +38,6 @@ function TürkiyeMapScene({ onSelectVenue }: { onSelectVenue: (venue: any) => vo
         <meshStandardMaterial color="#1e293b" />
       </mesh>
 
-      {/* 3D Venue Buildings */}
       {venues.map((v) => (
         <group key={v.id} position={v.pos as [number, number, number]} onClick={() => onSelectVenue(v)}>
           <mesh position={[0, 0.7, 0]}>
@@ -73,6 +70,19 @@ export default function GameHome() {
     location: 'kadikoy',
     rent: 5000
   });
+
+  // Supabase Cloud Sync Effect
+  useEffect(() => {
+    if (supabase && gameStarted) {
+      supabase.from('turkiye_players').upsert({
+        username: player.username,
+        data: player,
+        updated_at: new Date()
+      }).then(({ error }) => {
+        if (error) console.log('Sync note:', error.message);
+      });
+    }
+  }, [player, gameStarted]);
 
   const content = {
     en: {
@@ -158,7 +168,6 @@ export default function GameHome() {
               <p className="text-xs text-slate-500">{t.travelPrompt}</p>
             </div>
 
-            {/* 3D Isometric Map Canvas */}
             <div className="w-full h-[420px] bg-gradient-to-b from-slate-900 to-slate-800 rounded-3xl overflow-hidden shadow-2xl border-4 border-white relative mb-4">
               <Canvas camera={{ position: [8, 10, 10], fov: 45 }}>
                 <ambientLight intensity={1.2} />
@@ -172,7 +181,6 @@ export default function GameHome() {
               </div>
             </div>
 
-            {/* Venue Modal Popover */}
             {selectedVenue && (
               <div className="absolute inset-x-4 bottom-16 bg-white p-6 rounded-3xl shadow-2xl border-2 border-slate-200 z-50 flex flex-col items-center text-center animate-fade-in max-w-lg mx-auto">
                 <span className="text-4xl mb-2">{selectedVenue.icon}</span>
