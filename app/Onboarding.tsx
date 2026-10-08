@@ -1,47 +1,29 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import React, { useState, useEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
 
 type Language = 'en' | 'tr';
 
-function CustomCharacter({ customization }: { customization: any }) {
-  const groupRef = useRef<any>();
-  
-  useFrame(() => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += 0.005;
-    }
-  });
-
+function DummyCharacter({ customization }: { customization: any }) {
   return (
-    <group ref={groupRef} position={[0, -1.2, 0]}>
-      {/* Head */}
-      <mesh position={[0, 2.5, 0]}>
-        <sphereGeometry args={[0.5, 32, 32]} />
-        <meshStandardMaterial color={customization.skinTone} />
-      </mesh>
-      {/* Hair */}
-      <mesh position={[0, 2.8, 0]}>
-        <boxGeometry args={[0.55, 0.25, 0.55]} />
-        <meshStandardMaterial color={customization.hairColor} />
-      </mesh>
-      {/* Body / Shirt */}
-      <mesh position={[0, 1.2, 0]}>
-        <cylinderGeometry args={[0.6, 0.6, 1.6, 32]} />
-        <meshStandardMaterial color={customization.shirtColor} />
-      </mesh>
-      {/* Pants */}
-      <mesh position={[-0.25, 0, 0]}>
-        <cylinderGeometry args={[0.2, 0.2, 0.8, 32]} />
-        <meshStandardMaterial color="#1e3a8a" />
-      </mesh>
-      <mesh position={[0.25, 0, 0]}>
-        <cylinderGeometry args={[0.2, 0.2, 0.8, 32]} />
-        <meshStandardMaterial color="#1e3a8a" />
-      </mesh>
-    </group>
+    <div className="w-full h-full flex flex-col items-center justify-center relative">
+      <div 
+        className="w-24 h-36 rounded-3xl shadow-xl relative flex flex-col items-center justify-center border-4 border-white transition-all duration-300"
+        style={{ backgroundColor: customization.shirtColor }}
+      >
+        <div 
+          className="w-16 h-16 rounded-full -mt-10 border-4 border-white shadow-md"
+          style={{ backgroundColor: customization.skinTone }}
+        >
+          <div 
+            className="w-16 h-6 rounded-t-full -mt-2"
+            style={{ backgroundColor: customization.hairColor }}
+          ></div>
+        </div>
+        <span className="text-white font-black text-[10px] mt-4 uppercase tracking-widest bg-black/30 px-2 py-0.5 rounded-full">3D Avatar</span>
+      </div>
+    </div>
   );
 }
 
@@ -53,12 +35,16 @@ export default function Onboarding({ onComplete }: { onComplete: (data: any) => 
   const [dream, setDream] = useState('');
   const [lotteryResult, setLotteryResult] = useState<any>(null);
   const [isSpinning, setIsSpinning] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // Customization States
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [customization, setCustomization] = useState({
     skinTone: '#fcd34d',
     hairColor: '#1e293b',
-    shirtColor: '#dc2626' // Ziraat Red default
+    shirtColor: '#dc2626'
   });
 
   const text = {
@@ -211,15 +197,9 @@ export default function Onboarding({ onComplete }: { onComplete: (data: any) => 
       <div className="bg-white w-full max-w-3xl rounded-[2rem] shadow-[0_15px_40px_rgba(250,204,21,0.15)] border border-slate-200 flex flex-col md:flex-row overflow-hidden min-h-[500px] mt-12 relative">
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-600 via-red-500 to-yellow-400 z-10"></div>
 
-        {/* LIVE 3D AVATAR CUSTOMIZER PREVIEW */}
         <div className="bg-slate-50 w-full md:w-5/12 p-8 flex flex-col items-center justify-center border-r border-slate-100 relative">
           <div className="w-full h-full min-h-[300px] flex-1 relative bg-gradient-to-b from-slate-200 to-slate-100 rounded-3xl overflow-hidden shadow-inner border-[4px] border-white mb-4">
-            <Canvas camera={{ position: [0, 1, 5], fov: 50 }}>
-              <ambientLight intensity={0.6} />
-              <directionalLight position={[5, 5, 5]} intensity={1} />
-              <CustomCharacter customization={customization} />
-              <OrbitControls enableZoom={false} enablePan={false} minPolarAngle={Math.PI / 2.5} maxPolarAngle={Math.PI / 2.5} />
-            </Canvas>
+            {mounted && <DummyCharacter customization={customization} />}
           </div>
           <p className="font-bold text-slate-700 z-10">{username || '@username'}</p>
         </div>
