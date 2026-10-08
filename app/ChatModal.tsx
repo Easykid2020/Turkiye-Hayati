@@ -11,7 +11,7 @@ interface Message {
 }
 
 export default function ChatModal({ onClose, updateWallet, updateEnergy, playerData }: any) {
-  const [activeApp, setActiveApp] = useState<'home' | 'messages' | 'bank' | 'career'>('home');
+  const [activeApp, setActiveApp] = useState<'home' | 'messages' | 'bank' | 'career' | 'borsa'>('home');
   
   // Chat State
   const [npc] = useState(generateRandomNPC());
@@ -25,6 +25,9 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
   // Career State
   const [currentJob, setCurrentJob] = useState<string>('İşsiz (Unemployed)');
   const [jobIncome, setJobIncome] = useState<number>(0);
+
+  // Borsa / Crypto State
+  const [portfolioValue, setPortfolioValue] = useState<number>(0);
 
   function generateRandomNPC() {
     const names = ["Emre", "Ayşe", "Tariq", "Fatma", "Ozan", "Leyla"];
@@ -105,7 +108,23 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
   const applyForJob = (title: string, salary: number) => {
     setCurrentJob(title);
     setJobIncome(salary);
-    updateWallet(salary); // Immediate signing bonus/weekly pay simulation
+    updateWallet(salary);
+  };
+
+  const tradeAsset = (cost: number, multiplier: number, name: string) => {
+    if (playerData.money < cost) {
+      alert("Yetersiz bakiye! (Insufficient funds)");
+      return;
+    }
+    updateWallet(-cost);
+    const win = Math.random() > 0.45; // 55% chance to win
+    const payout = win ? cost * multiplier : 0;
+    if (win) {
+      updateWallet(payout);
+      alert(`Tebrikler! ${name} yatırımından ${payout.toLocaleString()} ₺ kazandın! 🎉`);
+    } else {
+      alert(`Piyasa çöküşü! ${name} yatırımın battı, ${cost.toLocaleString()} ₺ kaybettin. 📉`);
+    }
   };
 
   return (
@@ -158,12 +177,12 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
                    <span className="text-white text-[10px] font-medium">Kariyer</span>
                 </div>
 
-                {/* Placeholder App */}
-                <div className="flex flex-col items-center gap-1 opacity-50">
-                   <div className="w-14 h-14 bg-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
-                      <span className="text-white text-2xl">🛒</span>
+                {/* Borsa App Icon */}
+                <div onClick={() => setActiveApp('borsa')} className="flex flex-col items-center gap-1 cursor-pointer hover:scale-105 transition-transform">
+                   <div className="w-14 h-14 bg-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
+                      <span className="text-white text-2xl">📈</span>
                    </div>
-                   <span className="text-white text-[10px] font-medium">Trendyol</span>
+                   <span className="text-white text-[10px] font-medium">Borsa</span>
                 </div>
              </div>
 
@@ -209,7 +228,7 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
         )}
 
         {/* ======================= */}
-        {/* APP 3: KARİYER (CAREER) */}
+        {/* APP 3: KARİYER          */}
         {/* ======================= */}
         {activeApp === 'career' && (
           <div className="flex-1 bg-white w-full h-full flex flex-col relative pt-12">
@@ -264,7 +283,59 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
         )}
 
         {/* ======================= */}
-        {/* APP 4: MESSAGES         */}
+        {/* APP 4: BORSA & CRYPTO   */}
+        {/* ======================= */}
+        {activeApp === 'borsa' && (
+          <div className="flex-1 bg-white w-full h-full flex flex-col relative pt-12">
+            <div className="bg-emerald-600 px-5 py-4 flex justify-between items-center shadow-md z-10">
+               <button onClick={() => setActiveApp('home')} className="text-white text-2xl font-light">‹</button>
+               <h1 className="text-white font-bold text-sm tracking-widest">BİST & KRİPTO</h1>
+               <div className="w-6"></div>
+            </div>
+            
+            <div className="p-5 flex-1 bg-slate-50 flex flex-col gap-4 overflow-y-auto">
+               <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
+                  <p className="text-[10px] font-bold text-emerald-600 uppercase">Hızlı Yatırım</p>
+                  <p className="text-xs text-emerald-800 mt-1">Paranı ikiye katla ya da sıfırla!</p>
+               </div>
+
+               <div className="space-y-3">
+                  <div className="bg-white p-3.5 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm">
+                     <div>
+                       <p className="text-xs font-bold text-slate-800">🇹🇷 Türk Hava Yolları (THYAO)</p>
+                       <p className="text-[10px] text-slate-500">Maliyet: 100,000 ₺ (2x Kazan)</p>
+                     </div>
+                     <button onClick={() => tradeAsset(100000, 2, 'THYAO')} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">
+                       Yatır
+                     </button>
+                  </div>
+
+                  <div className="bg-white p-3.5 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm">
+                     <div>
+                       <p className="text-xs font-bold text-slate-800">⚡ Halka Arz Macerası</p>
+                       <p className="text-[10px] text-slate-500">Maliyet: 500,000 ₺ (3x Kazan)</p>
+                     </div>
+                     <button onClick={() => tradeAsset(500000, 3, 'Halka Arz')} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">
+                       Yatır
+                     </button>
+                  </div>
+
+                  <div className="bg-white p-3.5 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm">
+                     <div>
+                       <p className="text-xs font-bold text-slate-800">🚀 Meme Coin Spekülasyonu</p>
+                       <p className="text-[10px] text-slate-500">Maliyet: 1,000,000 ₺ (5x Kazan)</p>
+                     </div>
+                     <button onClick={() => tradeAsset(1000000, 5, 'Meme Coin')} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">
+                       Yatır
+                     </button>
+                  </div>
+               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ======================= */}
+        {/* APP 5: MESSAGES         */}
         {/* ======================= */}
         {activeApp === 'messages' && (
           <div className="flex-1 bg-black flex flex-col relative pt-10">
