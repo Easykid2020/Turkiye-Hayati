@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { useFrame } from '@react-three/fiber';
 import { createClient } from '@supabase/supabase-js';
 import ChatModal from './ChatModal';
 import Onboarding from './Onboarding';
@@ -13,128 +12,64 @@ const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supaba
 
 type Tab = 'home' | 'map' | 'phone';
 
-function RealisticDistrictBuilding({ position, primaryColor, height, name, isSelected, onClick }: any) {
-  const groupRef = useRef<any>();
-  const [hovered, setHovered] = useState(false);
-
-  useFrame((state) => {
-    if (groupRef.current && (isSelected || hovered)) {
-      groupRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 4) * 0.15;
-    } else if (groupRef.current) {
-      groupRef.current.position.y = position[1];
-    }
-  });
-
-  return (
-    <group 
-      ref={groupRef} 
-      position={position} 
-      onClick={onClick}
-      onPointerOver={() => setHovered(true)}
-      onPointerOut={() => setHovered(false)}
-    >
-      <mesh position={[0, 0.8, 0]}>
-        <boxGeometry args={[4.2, 1.6, 4.2]} />
-        <meshStandardMaterial color="#0f172a" roughness={0.2} metalness={0.8} />
-      </mesh>
-
-      <mesh position={[0, 0.8, 2.11]}>
-        <boxGeometry args={[3.6, 1.0, 0.1]} />
-        <meshStandardMaterial color="#38bdf8" emissive="#0284c7" emissiveIntensity={1} />
-      </mesh>
-      <mesh position={[2.11, 0.8, 0]} rotation={[0, Math.PI / 2, 0]}>
-        <boxGeometry args={[3.6, 1.0, 0.1]} />
-        <meshStandardMaterial color="#38bdf8" emissive="#0284c7" emissiveIntensity={1} />
-      </mesh>
-
-      <mesh position={[0, 1.6 + (height / 2), 0]}>
-        <boxGeometry args={[3.8, height, 3.8]} />
-        <meshStandardMaterial color={isSelected ? '#dc2626' : primaryColor} roughness={0.3} metalness={0.4} />
-      </mesh>
-
-      <mesh position={[0, 1.6 + (height / 2), 1.91]}>
-        <boxGeometry args={[2.8, height * 0.7, 0.1]} />
-        <meshStandardMaterial color="#fef08a" emissive="#eab308" emissiveIntensity={0.6} />
-      </mesh>
-      <mesh position={[1.91, 1.6 + (height / 2), 0]} rotation={[0, Math.PI / 2, 0]}>
-        <boxGeometry args={[2.8, height * 0.7, 0.1]} />
-        <meshStandardMaterial color="#fef08a" emissive="#eab308" emissiveIntensity={0.6} />
-      </mesh>
-
-      <mesh position={[0, 1.6 + height + 0.4, 0]}>
-        <boxGeometry args={[3.0, 0.8, 3.0]} />
-        <meshStandardMaterial color="#1e293b" roughness={0.5} />
-      </mesh>
-
-      <mesh position={[0, 1.6 + height + 1.1, 1.6]}>
-        <boxGeometry args={[3.2, 0.8, 0.3]} />
-        <meshStandardMaterial color="#000000" emissive="#f43f5e" emissiveIntensity={1.5} />
-      </mesh>
-    </group>
-  );
-}
-
-function LagosLifeCityEngine({ currentLocation, onSelectLocation }: { currentLocation: string, onSelectLocation: (id: string) => void }) {
+function CityBuildings({ currentLocation, onSelectLocation }: { currentLocation: string, onSelectLocation: (id: string) => void }) {
   return (
     <group position={[0, -1.5, 0]}>
+      {/* Asphalt Ground */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-        <planeGeometry args={[80, 80]} />
+        <planeGeometry args={[70, 70]} />
         <meshStandardMaterial color="#050811" roughness={0.9} />
       </mesh>
 
+      {/* Roads */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
-        <planeGeometry args={[72, 8]} />
-        <meshStandardMaterial color="#111827" roughness={0.8} />
+        <planeGeometry args={[64, 6]} />
+        <meshStandardMaterial color="#111827" />
       </mesh>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
-        <planeGeometry args={[8, 72]} />
-        <meshStandardMaterial color="#111827" roughness={0.8} />
+        <planeGeometry args={[6, 64]} />
+        <meshStandardMaterial color="#111827" />
       </mesh>
 
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]}>
-        <planeGeometry args={[70, 0.3]} />
-        <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={1} />
-      </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]}>
-        <planeGeometry args={[0.3, 70]} />
-        <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={1} />
-      </mesh>
+      {/* Kadıköy Building */}
+      <group position={[-7, 0, -7]} onClick={() => onSelectLocation('kadikoy')}>
+        <mesh position={[0, 2, 0]}>
+          <boxGeometry args={[3.5, 4, 3.5]} />
+          <meshStandardMaterial color={currentLocation === 'kadikoy' ? '#dc2626' : '#2563eb'} roughness={0.3} />
+        </mesh>
+        <mesh position={[0, 4.2, 0]}>
+          <boxGeometry args={[3.8, 0.4, 3.8]} />
+          <meshStandardMaterial color="#1e293b" />
+        </mesh>
+      </group>
 
-      <RealisticDistrictBuilding 
-        position={[-8, 0, -8]} 
-        primaryColor="#2563eb" 
-        height={4.5} 
-        name="Kadıköy" 
-        isSelected={currentLocation === 'kadikoy'} 
-        onClick={() => onSelectLocation('kadikoy')} 
-      />
+      {/* Kızılay Building (Billboard Zone) */}
+      <group position={[7, 0, -7]} onClick={() => onSelectLocation('kizilay')}>
+        <mesh position={[0, 2.7, 0]}>
+          <boxGeometry args={[3.5, 5.4, 3.5]} />
+          <meshStandardMaterial color={currentLocation === 'kizilay' ? '#dc2626' : '#d97706'} roughness={0.3} />
+        </mesh>
+        <mesh position={[0, 5.6, 1.5]}>
+          <boxGeometry args={[3, 0.8, 0.3]} />
+          <meshStandardMaterial color="#000000" emissive="#f43f5e" emissiveIntensity={1.5} />
+        </mesh>
+      </group>
 
-      <RealisticDistrictBuilding 
-        position={[8, 0, -8]} 
-        primaryColor="#d97706" 
-        height={6.0} 
-        name="Kızılay" 
-        isSelected={currentLocation === 'kizilay'} 
-        onClick={() => onSelectLocation('kizilay')} 
-      />
+      {/* Beşiktaş Building */}
+      <group position={[-7, 0, 7]} onClick={() => onSelectLocation('besiktas')}>
+        <mesh position={[0, 2.3, 0]}>
+          <boxGeometry args={[3.5, 4.6, 3.5]} />
+          <meshStandardMaterial color={currentLocation === 'besiktas' ? '#dc2626' : '#059669'} roughness={0.3} />
+        </mesh>
+      </group>
 
-      <RealisticDistrictBuilding 
-        position={[-8, 0, 8]} 
-        primaryColor="#059669" 
-        height={5.0} 
-        name="Beşiktaş" 
-        isSelected={currentLocation === 'besiktas'} 
-        onClick={() => onSelectLocation('besiktas')} 
-      />
-
-      <RealisticDistrictBuilding 
-        position={[8, 0, 8]} 
-        primaryColor="#475569" 
-        height={3.5} 
-        name="Bağcılar" 
-        isSelected={currentLocation === 'bagcilar'} 
-        onClick={() => onSelectLocation('bagcilar')} 
-      />
+      {/* Bağcılar Building */}
+      <group position={[7, 0, 7]} onClick={() => onSelectLocation('bagcilar')}>
+        <mesh position={[0, 1.6, 0]}>
+          <boxGeometry args={[3.5, 3.2, 3.5]} />
+          <meshStandardMaterial color={currentLocation === 'bagcilar' ? '#dc2626' : '#475569'} roughness={0.3} />
+        </mesh>
+      </group>
     </group>
   );
 }
@@ -143,7 +78,7 @@ const SafeCanvas = dynamic(
   () => import('@react-three/fiber').then((mod) => {
     const { Canvas } = mod;
     return function Component({ children }: any) {
-      return <Canvas camera={{ position: [14, 14, 14], fov: 40 }}>{children}</Canvas>;
+      return <Canvas camera={{ position: [12, 12, 12], fov: 45 }}>{children}</Canvas>;
     };
   }),
   { ssr: false }
@@ -182,7 +117,7 @@ export default function GameHome() {
       week: 'week',
       health: 'Health',
       energy: 'Energy',
-      travelPrompt: 'Click any realistic 3D building to travel across districts'
+      travelPrompt: 'Click buildings to travel across districts'
     },
     tr: {
       activeLocation: 'AKTİF BÖLGE',
@@ -281,9 +216,9 @@ export default function GameHome() {
 
             <div className="w-full h-[420px] bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 rounded-3xl overflow-hidden shadow-2xl border-4 border-slate-200 relative mb-4">
               <SafeCanvas>
-                <ambientLight intensity={1.4} />
-                <directionalLight position={[25, 40, 25]} intensity={2.5} />
-                <LagosLifeCityEngine currentLocation={player.location} onSelectLocation={(id) => travelToDistrict(id)} />
+                <ambientLight intensity={1.5} />
+                <directionalLight position={[20, 30, 20]} intensity={2.0} />
+                <CityBuildings currentLocation={player.location} onSelectLocation={(id) => travelToDistrict(id)} />
                 <SafeOrbitControls enableZoom={true} enablePan={true} maxPolarAngle={Math.PI / 2.2} />
               </SafeCanvas>
               <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-md text-white text-[11px] font-semibold px-4 py-2 rounded-xl shadow-lg border border-white/10 pointer-events-none flex items-center gap-2">
