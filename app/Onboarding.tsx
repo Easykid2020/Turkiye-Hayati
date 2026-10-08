@@ -1,13 +1,11 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import dynamic from 'next/dynamic';
-import { useFrame } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 
 type Language = 'en' | 'tr';
 
-// SSR-Safe 3D Character Component
 function DummyCharacter() {
   const groupRef = useRef<any>();
   
@@ -39,22 +37,6 @@ function DummyCharacter() {
   );
 }
 
-// Dynamically import the Canvas with SSR disabled to prevent Vercel build crashes
-const SafeCanvas = dynamic(
-  () => import('@react-three/fiber').then((mod) => {
-    const { Canvas } = mod;
-    return function Component({ children }: any) {
-      return <Canvas camera={{ position: [0, 1, 5], fov: 50 }}>{children}</Canvas>;
-    };
-  }),
-  { ssr: false }
-);
-
-const SafeOrbitControls = dynamic(
-  () => import('@react-three/drei').then((mod) => mod.OrbitControls),
-  { ssr: false }
-);
-
 export default function Onboarding({ onComplete }: { onComplete: (data: any) => void }) {
   const [lang, setLang] = useState<Language>('en'); 
   const [step, setStep] = useState(1);
@@ -63,10 +45,10 @@ export default function Onboarding({ onComplete }: { onComplete: (data: any) => 
   const [dream, setDream] = useState('');
   const [lotteryResult, setLotteryResult] = useState<any>(null);
   const [isSpinning, setIsSpinning] = useState(false);
-  const [isClient, setIsClient] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    setMounted(true);
   }, []);
 
   const text = {
@@ -211,18 +193,16 @@ export default function Onboarding({ onComplete }: { onComplete: (data: any) => 
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-600 via-red-500 to-yellow-400 z-10"></div>
 
         <div className="bg-slate-50 w-full md:w-5/12 p-8 flex flex-col items-center justify-center border-r border-slate-100 relative">
-          
           <div className="w-full h-full min-h-[300px] flex-1 relative bg-gradient-to-b from-slate-200 to-slate-100 rounded-3xl overflow-hidden shadow-inner border-[4px] border-white mb-4">
-            {isClient && (
-              <SafeCanvas>
+            {mounted && (
+              <Canvas camera={{ position: [0, 1, 5], fov: 50 }}>
                 <ambientLight intensity={0.6} />
                 <directionalLight position={[5, 5, 5]} intensity={1} />
                 <DummyCharacter />
-                <SafeOrbitControls enableZoom={false} enablePan={false} minPolarAngle={Math.PI / 2.5} maxPolarAngle={Math.PI / 2.5} />
-              </SafeCanvas>
+                <OrbitControls enableZoom={false} enablePan={false} minPolarAngle={Math.PI / 2.5} maxPolarAngle={Math.PI / 2.5} />
+              </Canvas>
             )}
           </div>
-
           <p className="font-bold text-slate-700 z-10">{username || '@username'}</p>
         </div>
 
