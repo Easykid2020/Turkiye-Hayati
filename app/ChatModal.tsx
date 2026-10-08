@@ -3,10 +3,12 @@
 import React, { useState } from 'react';
 
 export default function ChatModal({ onClose, playerData, updateWallet, updateEnergy }: any) {
-  const [activeApp, setActiveApp] = useState<'home' | 'bank' | 'career' | 'stocks' | 'market' | 'lcw' | 'houses' | 'cars' | 'forbes' | 'police' | 'messages'>('home');
+  const [activeApp, setActiveApp] = useState<'home' | 'bank' | 'career' | 'stocks' | 'market' | 'lcw' | 'houses' | 'cars' | 'forbes' | 'police' | 'messages' | 'masak'>('home');
   
   const [isArrested, setIsArrested] = useState(false);
   const [arrestFine, setArrestFine] = useState(20000);
+  const [masakFlagged, setMasakFlagged] = useState(true);
+  const [taxPenalty, setTaxPenalty] = useState(150000);
 
   const [jobs] = useState([
     { id: 'intern', title: 'Computer Engineering Intern', salary: 15000, desc: 'Coding, Verilog & debugging at Teknopark' },
@@ -107,6 +109,11 @@ export default function ChatModal({ onClose, playerData, updateWallet, updateEne
                 <button onClick={() => setActiveApp('police')} className="bg-rose-600/20 border border-rose-500/40 p-3 rounded-2xl flex flex-col items-center gap-1 hover:bg-rose-600/30 transition-all">
                   <span className="text-2xl">🚨</span>
                   <span className="text-[10px] font-bold">Police Dept</span>
+                </button>
+                <button onClick={() => setActiveApp('masak')} className="bg-orange-600/20 border border-orange-500/40 p-3 rounded-2xl flex flex-col items-center gap-1 hover:bg-orange-600/30 transition-all relative">
+                  <span className="text-2xl">⚖️</span>
+                  <span className="text-[10px] font-bold">MASAK Audit</span>
+                  {masakFlagged && <div className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full animate-ping"></div>}
                 </button>
                 <button onClick={() => setActiveApp('messages')} className="bg-sky-600/20 border border-sky-500/40 p-3 rounded-2xl flex flex-col items-center gap-1 hover:bg-sky-600/30 transition-all">
                   <span className="text-2xl">💬</span>
@@ -360,23 +367,58 @@ export default function ChatModal({ onClose, playerData, updateWallet, updateEne
             </div>
           )}
 
+          {activeApp === 'masak' && (
+            <div className="space-y-4">
+              <button onClick={() => setActiveApp('home')} className="text-xs text-red-400 font-bold mb-2">← Back to Home</button>
+              <div className="bg-orange-950/60 border border-orange-500/40 p-4 rounded-2xl text-center">
+                <span className="text-3xl">⚖️</span>
+                <h4 className="text-sm font-black mt-2">MASAK Investigation Notice</h4>
+                <p className="text-[10px] text-orange-200 mt-1">
+                  {masakFlagged 
+                    ? "Official Notice: Unexplained high wealth detected in your Ziraat account. Tax audit required!" 
+                    : "Status: MASAK audit cleared. Your funds are fully legal."}
+                </p>
+              </div>
+              {masakFlagged ? (
+                <div className="space-y-2.5">
+                  <button onClick={() => {
+                    if (playerData.money < taxPenalty) {
+                      alert("Yetersiz bakiye!");
+                      return;
+                    }
+                    updateWallet(-taxPenalty);
+                    setMasakFlagged(false);
+                    alert("Tax penalty paid! MASAK audit closed successfully.");
+                  }} className="w-full bg-emerald-600 hover:bg-emerald-500 p-3 rounded-xl text-xs font-bold">
+                    Pay Tax Penalty ({taxPenalty.toLocaleString()} ₺)
+                  </button>
+                  <button onClick={() => alert("CPA (Mali Müşavir) hired! Audit deferred.")} className="w-full bg-slate-800 hover:bg-slate-700 p-3 rounded-xl text-xs font-bold border border-slate-700">
+                    Hire CPA / Mali Müşavir (25,000 ₺)
+                  </button>
+                </div>
+              ) : (
+                <p className="text-xs text-center text-emerald-400 font-bold mt-4">You are clear of financial investigations.</p>
+              )}
+            </div>
+          )}
+
           {activeApp === 'messages' && (
             <div className="space-y-4">
               <button onClick={() => setActiveApp('home')} className="text-xs text-red-400 font-bold mb-2">← Back to Home</button>
               <h4 className="text-sm font-black mb-3">💬 Messages & Governor News</h4>
               <div className="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700 space-y-1">
                 <div className="flex justify-between items-center">
+                  <p className="text-xs font-bold text-orange-400">MASAK Official</p>
+                  <span className="text-[9px] text-slate-400">14:50</span>
+                </div>
+                <p className="text-xs text-slate-200">Notice issued regarding your recent account inflows. Please review the MASAK Audit app.</p>
+              </div>
+              <div className="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700 space-y-1">
+                <div className="flex justify-between items-center">
                   <p className="text-xs font-bold text-red-400">Ankara/Istanbul Gov</p>
                   <span className="text-[9px] text-slate-400">14:20</span>
                 </div>
                 <p className="text-xs text-slate-200">Transport subsidy is live this week! İETT and Dolmuş fares are half price.</p>
-              </div>
-              <div className="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700 space-y-1">
-                <div className="flex justify-between items-center">
-                  <p className="text-xs font-bold text-emerald-400">Ziraat Bankası</p>
-                  <span className="text-[9px] text-slate-400">12:00</span>
-                </div>
-                <p className="text-xs text-slate-200">Your account has been successfully credited with Birth Lottery funds.</p>
               </div>
             </div>
           )}
