@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { useState, useRef } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
+import * as THREE from 'three';
 import { createClient } from '@supabase/supabase-js';
 import ChatModal from './ChatModal';
 import Onboarding from './Onboarding';
@@ -13,113 +14,138 @@ const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supaba
 
 type Tab = 'home' | 'map' | 'phone';
 
-function ArchitecturalBuilding({ position, baseColor, height, isSelected, onClick }: any) {
+function RealisticDistrictBuilding({ position, primaryColor, height, name, isSelected, onClick }: any) {
+  const groupRef = useRef<any>();
+  const [hovered, setHovered] = useState(false);
+
+  useFrame((state) => {
+    if (groupRef.current && (isSelected || hovered)) {
+      groupRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 4) * 0.15;
+    } else if (groupRef.current) {
+      groupRef.current.position.y = position[1];
+    }
+  });
+
   return (
-    <group position={position} onClick={onClick}>
-      {/* Ground Level Shop / Storefront */}
-      <mesh position={[0, 0.6, 0]}>
-        <boxGeometry args={[3.4, 1.2, 3.4]} />
-        <meshStandardMaterial color="#1e293b" roughness={0.4} />
-      </mesh>
-      
-      {/* Glowing Storefront Glass Windows */}
-      <mesh position={[0, 0.6, 1.71]}>
-        <boxGeometry args={[2.8, 0.8, 0.1]} />
-        <meshStandardMaterial color="#38bdf8" emissive="#0284c7" emissiveIntensity={0.9} />
-      </mesh>
-
-      {/* Mid-Level Apartments / Offices */}
-      <mesh position={[0, 1.2 + (height / 2), 0]}>
-        <boxGeometry args={[3.2, height, 3.2]} />
-        <meshStandardMaterial color={isSelected ? '#dc2626' : baseColor} roughness={0.3} />
+    <group 
+      ref={groupRef} 
+      position={position} 
+      onClick={onClick}
+      onPointerOver={() => setHovered(true)}
+      onPointerOut={() => setHovered(false)}
+    >
+      {/* Ground Floor Retail / Storefront */}
+      <mesh position={[0, 0.8, 0]}>
+        <boxGeometry args={[4.2, 1.6, 4.2]} />
+        <meshStandardMaterial color="#0f172a" roughness={0.2} metalness={0.8} />
       </mesh>
 
-      {/* Building Windows Grid Effect */}
-      <mesh position={[0, 1.2 + (height / 2), 1.61]}>
-        <boxGeometry args={[2.4, height * 0.7, 0.1]} />
-        <meshStandardMaterial color="#fef08a" emissive="#ca8a04" emissiveIntensity={0.4} />
+      {/* Storefront Glass Windows (Glowing Cyan) */}
+      <mesh position={[0, 0.8, 2.11]}>
+        <boxGeometry args={[3.6, 1.0, 0.1]} />
+        <meshStandardMaterial color="#38bdf8" emissive="#0284c7" emissiveIntensity={1} />
+      </mesh>
+      <mesh position={[2.11, 0.8, 0]} rotation={[0, Math.PI / 2, 0]}>
+        <boxGeometry args={[3.6, 1.0, 0.1]} />
+        <meshStandardMaterial color="#38bdf8" emissive="#0284c7" emissiveIntensity={1} />
       </mesh>
 
-      {/* Rooftop Structure & Water Tank */}
-      <mesh position={[0, 1.2 + height + 0.3, 0]}>
-        <boxGeometry args={[2.8, 0.6, 2.8]} />
-        <meshStandardMaterial color="#334155" />
-      </mesh>
-      <mesh position={[-0.8, 1.2 + height + 0.8, -0.8]}>
-        <cylinderGeometry args={[0.3, 0.3, 0.8, 16]} />
-        <meshStandardMaterial color="#64748b" />
+      {/* Main Tower Body */}
+      <mesh position={[0, 1.6 + (height / 2), 0]}>
+        <boxGeometry args={[3.8, height, 3.8]} />
+        <meshStandardMaterial color={isSelected ? '#dc2626' : primaryColor} roughness={0.3} metalness={0.4} />
       </mesh>
 
-      {/* Glowing Billboard Header */}
-      <mesh position={[0, 1.2 + height + 0.8, 1.5]}>
-        <boxGeometry args={[2.6, 0.7, 0.3]} />
-        <meshStandardMaterial color="#000000" emissive="#eab308" emissiveIntensity={1.2} />
+      {/* Architectural Window Panels */}
+      <mesh position={[0, 1.6 + (height / 2), 1.91]}>
+        <boxGeometry args={[2.8, height * 0.7, 0.1]} />
+        <meshStandardMaterial color="#fef08a" emissive="#eab308" emissiveIntensity={0.6} />
+      </mesh>
+      <mesh position={[1.91, 1.6 + (height / 2), 0]} rotation={[0, Math.PI / 2, 0]}>
+        <boxGeometry args={[2.8, height * 0.7, 0.1]} />
+        <meshStandardMaterial color="#fef08a" emissive="#eab308" emissiveIntensity={0.6} />
+      </mesh>
+
+      {/* Rooftop Structure / Penthouse */}
+      <mesh position={[0, 1.6 + height + 0.4, 0]}>
+        <boxGeometry args={[3.0, 0.8, 3.0]} />
+        <meshStandardMaterial color="#1e293b" roughness={0.5} />
+      </mesh>
+
+      {/* Glowing Billboard / Signage Header */}
+      <mesh position={[0, 1.6 + height + 1.1, 1.6]}>
+        <boxGeometry args={[3.2, 0.8, 0.3]} />
+        <meshStandardMaterial color="#000000" emissive="#f43f5e" emissiveIntensity={1.5} />
       </mesh>
     </group>
   );
 }
 
-function UltimateCityViewport({ currentLocation, onSelectLocation }: { currentLocation: string, onSelectLocation: (id: string) => void }) {
+function LagosLifeCityEngine({ currentLocation, onSelectLocation }: { currentLocation: string, onSelectLocation: (id: string) => void }) {
   return (
-    <group position={[0, -1, 0]}>
-      {/* City Asphalt Base */}
+    <group position={[0, -1.5, 0]}>
+      {/* Dark Asphalt Ground */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-        <planeGeometry args={[60, 60]} />
-        <meshStandardMaterial color="#0b0f19" roughness={0.9} />
+        <planeGeometry args={[80, 80]} />
+        <meshStandardMaterial color="#050811" roughness={0.9} />
       </mesh>
 
-      {/* Multi-Lane Roads */}
+      {/* Multi-Lane City Roads */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
-        <planeGeometry args={[52, 6]} />
-        <meshStandardMaterial color="#1e293b" />
+        <planeGeometry args={[72, 8]} />
+        <meshStandardMaterial color="#111827" roughness={0.8} />
       </mesh>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
-        <planeGeometry args={[6, 52]} />
-        <meshStandardMaterial color="#1e293b" />
+        <planeGeometry args={[8, 72]} />
+        <meshStandardMaterial color="#111827" roughness={0.8} />
       </mesh>
 
-      {/* Road Center Dividers (Yellow Stripes) */}
+      {/* Glowing Road Center Dividers */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]}>
-        <planeGeometry args={[50, 0.2]} />
-        <meshStandardMaterial color="#eab308" emissive="#eab308" emissiveIntensity={0.5} />
+        <planeGeometry args={[70, 0.3]} />
+        <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={1} />
       </mesh>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]}>
-        <planeGeometry args={[0.2, 50]} />
-        <meshStandardMaterial color="#eab308" emissive="#eab308" emissiveIntensity={0.5} />
+        <planeGeometry args={[0.3, 70]} />
+        <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={1} />
       </mesh>
 
-      {/* DISTRICT 1: KADIKÖY SAHİL */}
-      <ArchitecturalBuilding 
-        position={[-7, 0, -7]} 
-        baseColor="#2563eb" 
-        height={3.8} 
+      {/* Kadıköy District (Waterfront Blue) */}
+      <RealisticDistrictBuilding 
+        position={[-8, 0, -8]} 
+        primaryColor="#2563eb" 
+        height={4.5} 
+        name="Kadıköy" 
         isSelected={currentLocation === 'kadikoy'} 
         onClick={() => onSelectLocation('kadikoy')} 
       />
 
-      {/* DISTRICT 2: KIZILAY MEYDANI */}
-      <ArchitecturalBuilding 
-        position={[7, 0, -7]} 
-        baseColor="#d97706" 
-        height={5.2} 
+      {/* Kızılay Square (Ankara Center / Billboard Hub) */}
+      <RealisticDistrictBuilding 
+        position={[8, 0, -8]} 
+        primaryColor="#d97706" 
+        height={6.0} 
+        name="Kızılay" 
         isSelected={currentLocation === 'kizilay'} 
         onClick={() => onSelectLocation('kizilay')} 
       />
 
-      {/* DISTRICT 3: BEŞİKTAŞ ÇARŞI */}
-      <ArchitecturalBuilding 
-        position={[-7, 0, 7]} 
-        baseColor="#059669" 
-        height={4.4} 
+      {/* Beşiktaş Çarşı (Culture & Nightlife) */}
+      <RealisticDistrictBuilding 
+        position={[-8, 0, 8]} 
+        primaryColor="#059669" 
+        height={5.0} 
+        name="Beşiktaş" 
         isSelected={currentLocation === 'besiktas'} 
         onClick={() => onSelectLocation('besiktas')} 
       />
 
-      {/* DISTRICT 4: BAĞCILAR SOKAK */}
-      <ArchitecturalBuilding 
-        position={[7, 0, 7]} 
-        baseColor="#475569" 
-        height={3.0} 
+      {/* Bağcılar Sokak (Hard Hustle Zone) */}
+      <RealisticDistrictBuilding 
+        position={[8, 0, 8]} 
+        primaryColor="#475569" 
+        height={3.5} 
+        name="Bağcılar" 
         isSelected={currentLocation === 'bagcilar'} 
         onClick={() => onSelectLocation('bagcilar')} 
       />
@@ -155,7 +181,7 @@ export default function GameHome() {
       week: 'week',
       health: 'Health',
       energy: 'Energy',
-      travelPrompt: 'Click any architectural building to travel across districts'
+      travelPrompt: 'Click any realistic 3D building to travel across districts'
     },
     tr: {
       activeLocation: 'AKTİF BÖLGE',
@@ -213,7 +239,7 @@ export default function GameHome() {
   const currentLocation = locations.find(l => l.id === player.location) || locations[0];
 
   return (
-    <main className="min-h-screen bg-[#070a14] text-slate-800 flex flex-col font-sans overflow-hidden relative">
+    <main className="min-h-screen bg-[#030712] text-slate-800 flex flex-col font-sans overflow-hidden relative">
       
       <header className="fixed top-4 left-1/2 -translate-x-1/2 z-40 w-[95%] max-w-4xl flex justify-between items-center pointer-events-none">
         <div className="bg-white/90 backdrop-blur-md px-4 py-2.5 rounded-full shadow-sm border border-slate-200 flex items-center gap-4 text-xs font-semibold pointer-events-auto">
@@ -252,11 +278,11 @@ export default function GameHome() {
               <p className="text-xs text-slate-500">{currentLocation.desc[language]}</p>
             </div>
 
-            <div className="w-full h-96 bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 rounded-3xl overflow-hidden shadow-2xl border-4 border-slate-200 relative mb-4">
-              <Canvas camera={{ position: [12, 12, 12], fov: 42 }}>
-                <ambientLight intensity={1.2} />
-                <directionalLight position={[20, 35, 20]} intensity={2.2} />
-                <UltimateCityViewport currentLocation={player.location} onSelectLocation={(id) => travelToDistrict(id)} />
+            <div className="w-full h-[420px] bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 rounded-3xl overflow-hidden shadow-2xl border-4 border-slate-200 relative mb-4">
+              <Canvas camera={{ position: [14, 14, 14], fov: 40 }}>
+                <ambientLight intensity={1.4} />
+                <directionalLight position={[25, 40, 25]} intensity={2.5} />
+                <LagosLifeCityEngine currentLocation={player.location} onSelectLocation={(id) => travelToDistrict(id)} />
                 <OrbitControls enableZoom={true} enablePan={true} maxPolarAngle={Math.PI / 2.2} />
               </Canvas>
               <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-md text-white text-[11px] font-semibold px-4 py-2 rounded-xl shadow-lg border border-white/10 pointer-events-none flex items-center gap-2">
