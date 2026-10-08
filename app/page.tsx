@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import ChatModal from './ChatModal';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -162,6 +163,7 @@ export default function GameHome() {
   const [activeModal, setActiveModal] = useState<ModalType>('none');
   const [activeEvent, setActiveEvent] = useState<GameEvent | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
+  const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
   
   const [saveCode, setSaveCode] = useState<string>('');
   const [saveStatus, setSaveStatus] = useState<string>('');
@@ -436,6 +438,10 @@ export default function GameHome() {
           {lang === 'tr' ? 'Aylık Döngüyü İlerlet ➔' : 'Advance Monthly Cycle ➔'}
         </button>
 
+        <button onClick={() => setIsChatOpen(true)} className="w-full bg-gradient-to-r from-fuchsia-700 to-purple-600 text-white font-black text-lg py-4 rounded-xl shadow-lg border-b-4 border-purple-900 active:border-b-0 active:translate-y-1 transition-all uppercase tracking-widest">
+          💬 {lang === 'tr' ? 'Sokakta Biriyle Konuş / Finesse' : 'Chat & Finesse Someone'}
+        </button>
+
         <div className="bg-black p-6 rounded-2xl border-4 border-slate-800 shadow-2xl overflow-x-auto relative">
           <div className="flex flex-col gap-2 min-w-[560px] items-center">
             {cityMap.map((row, y) => (
@@ -588,6 +594,14 @@ export default function GameHome() {
             </div>
           </div>
         </div>
+      )}
+
+      {isChatOpen && (
+        <ChatModal 
+          onClose={() => setIsChatOpen(false)} 
+          updateWallet={(amount: number) => setPlayer(p => ({ ...p, money: p.money + amount }))}
+          updateEnergy={(amount: number) => setPlayer(p => ({ ...p, energy: Math.max(0, p.energy + amount) }))}
+        />
       )}
     </main>
   );
