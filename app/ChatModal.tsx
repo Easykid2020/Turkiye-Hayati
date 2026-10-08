@@ -16,18 +16,15 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
   // Chat State
   const [npc] = useState(generateRandomNPC());
   const [messages, setMessages] = useState<Message[]>([
-    { id: 1, sender: 'npc', text: `Ne haber?` }
+    { id: 1, sender: 'npc', text: `What's up?` }
   ]);
   const [isTyping, setIsTyping] = useState(false);
   const [interactionDone, setInteractionDone] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Career State
-  const [currentJob, setCurrentJob] = useState<string>('İşsiz (Unemployed)');
+  const [currentJob, setCurrentJob] = useState<string>('Unemployed');
   const [jobIncome, setJobIncome] = useState<number>(0);
-
-  // Borsa / Crypto State
-  const [portfolioValue, setPortfolioValue] = useState<number>(0);
 
   function generateRandomNPC() {
     const names = ["Emre", "Ayşe", "Tariq", "Fatma", "Ozan", "Leyla"];
@@ -54,50 +51,50 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
     const roll = Math.random();
 
     if (actionType === "friendly") {
-      addMessage('me', 'Nasılsın, her şey yolunda mı?');
+      addMessage('me', 'How are you doing, everything good?');
       setIsTyping(true);
       setTimeout(() => {
         setIsTyping(false);
-        addMessage('npc', 'İyidir! Sonra bir kahve içelim.');
+        addMessage('npc', 'Doing great! Let grab a coffee later.');
         updateEnergy(-5);
       }, 1500);
     } 
     
     else if (actionType === "bill") {
-      addMessage('me', 'Kanka acil paraya sıkıştım, biraz ateşleyebilir misin?');
+      addMessage('me', 'Hey, I am running a bit low on cash. Can you spot me some?');
       setIsTyping(true);
       setTimeout(() => {
         if (roll > 0.4) {
-          addMessage('npc', 'IBAN at hemen.');
+          addMessage('npc', 'Send your IBAN right now.');
           setTimeout(() => {
-            addMessage('me', 'TR12 0001 0000 1234 5678 9012 34 Ziraat Bankası');
+            addMessage('me', 'TR12 0001 0000 1234 5678 9012 34 Ziraat Bank');
             setTimeout(() => {
               setIsTyping(false);
               const moneyChange = npc.wealth === "Loaded" ? 150000 : 25000;
-              addMessage('npc', 'Hallettim.', true, moneyChange);
+              addMessage('npc', 'Done. Sent it over.', true, moneyChange);
               updateWallet(moneyChange);
             }, 1500);
           }, 1000);
         } else {
           setIsTyping(false);
-          addMessage('npc', 'Bende de kalmadı kanka ya, yarına bakarım.');
+          addMessage('npc', 'I am broke too bro, ask me tomorrow.');
         }
         updateEnergy(energyChange);
       }, 1500);
     } 
     
     else if (actionType === "scam") {
-      addMessage('me', 'Elimde bugünlük garantili %500 getiri sağlayan bir borsa tüyosu var.');
+      addMessage('me', 'I got an insider trading tip guaranteed to return 500% today.');
       setIsTyping(true);
       setTimeout(() => {
         if (roll > 0.65) {
           setIsTyping(false);
           const moneyChange = 500000;
-          addMessage('npc', 'Sana güveniyorum. Gönderdim.', true, moneyChange);
+          addMessage('npc', 'I trust you. Sent.', true, moneyChange);
           updateWallet(moneyChange);
         } else {
           setIsTyping(false);
-          addMessage('npc', 'Deli misin sen? Polisi arıyorum.');
+          addMessage('npc', 'Are you out of your mind? Calling the cops.');
           updateWallet(-50000); 
         }
         updateEnergy(energyChange);
@@ -113,17 +110,17 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
 
   const tradeAsset = (cost: number, multiplier: number, name: string) => {
     if (playerData.money < cost) {
-      alert("Yetersiz bakiye! (Insufficient funds)");
+      alert("Insufficient funds!");
       return;
     }
     updateWallet(-cost);
-    const win = Math.random() > 0.45; // 55% chance to win
+    const win = Math.random() > 0.45;
     const payout = win ? cost * multiplier : 0;
     if (win) {
       updateWallet(payout);
-      alert(`Tebrikler! ${name} yatırımından ${payout.toLocaleString()} ₺ kazandın! 🎉`);
+      alert(`Success! Your ${name} investment returned ${payout.toLocaleString()} ₺! 🎉`);
     } else {
-      alert(`Piyasa çöküşü! ${name} yatırımın battı, ${cost.toLocaleString()} ₺ kaybettin. 📉`);
+      alert(`Market crash! Your ${name} investment went under, you lost ${cost.toLocaleString()} ₺. 📉`);
     }
   };
 
@@ -174,7 +171,7 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
                    <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
                       <span className="text-white text-2xl">💼</span>
                    </div>
-                   <span className="text-white text-[10px] font-medium">Kariyer</span>
+                   <span className="text-white text-[10px] font-medium">Career</span>
                 </div>
 
                 {/* Borsa App Icon */}
@@ -182,7 +179,7 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
                    <div className="w-14 h-14 bg-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
                       <span className="text-white text-2xl">📈</span>
                    </div>
-                   <span className="text-white text-[10px] font-medium">Borsa</span>
+                   <span className="text-white text-[10px] font-medium">Stocks</span>
                 </div>
              </div>
 
@@ -199,25 +196,25 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
           <div className="flex-1 bg-white w-full h-full flex flex-col relative pt-12">
             <div className="bg-red-600 px-5 py-4 flex justify-between items-center shadow-md z-10">
                <button onClick={() => setActiveApp('home')} className="text-white text-2xl font-light">‹</button>
-               <h1 className="text-white font-bold text-sm tracking-widest">ZİRAAT MOBİL</h1>
+               <h1 className="text-white font-bold text-sm tracking-widest">ZIRAAT MOBILE</h1>
                <div className="w-6"></div>
             </div>
             
             <div className="p-5 flex-1 bg-slate-50 flex flex-col gap-4">
                <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
-                  <p className="text-xs text-slate-500 font-bold mb-1">Vadesiz TL Hesabı</p>
+                  <p className="text-xs text-slate-500 font-bold mb-1">Checking Account (TL)</p>
                   <p className="text-3xl font-black text-slate-800">{playerData?.money?.toLocaleString() || 0} ₺</p>
                   <p className="text-[10px] text-slate-400 mt-2">TR12 0001 0000 1234 5678 9012 34</p>
                </div>
 
                <div>
-                 <p className="text-xs font-bold text-slate-500 mb-3 pl-1">Son İşlemler</p>
+                 <p className="text-xs font-bold text-slate-500 mb-3 pl-1">Recent Transactions</p>
                  <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                        <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold">↓</div>
                        <div>
-                         <p className="text-xs font-bold text-slate-800">Doğum Piyangosu</p>
-                         <p className="text-[9px] text-slate-400">Bugün</p>
+                         <p className="text-xs font-bold text-slate-800">Birth Lottery</p>
+                         <p className="text-[9px] text-slate-400">Today</p>
                        </div>
                     </div>
                     <p className="text-emerald-500 font-bold text-sm">+5,000,000 ₺</p>
@@ -228,53 +225,53 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
         )}
 
         {/* ======================= */}
-        {/* APP 3: KARİYER          */}
+        {/* APP 3: CAREER           */}
         {/* ======================= */}
         {activeApp === 'career' && (
           <div className="flex-1 bg-white w-full h-full flex flex-col relative pt-12">
             <div className="bg-blue-600 px-5 py-4 flex justify-between items-center shadow-md z-10">
                <button onClick={() => setActiveApp('home')} className="text-white text-2xl font-light">‹</button>
-               <h1 className="text-white font-bold text-sm tracking-widest">TÜRKİYE KARİYER</h1>
+               <h1 className="text-white font-bold text-sm tracking-widest">CAREER HUB</h1>
                <div className="w-6"></div>
             </div>
             
             <div className="p-5 flex-1 bg-slate-50 flex flex-col gap-4 overflow-y-auto">
                <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
-                  <p className="text-[10px] font-bold text-blue-600 uppercase">Mevcut Durum</p>
+                  <p className="text-[10px] font-bold text-blue-600 uppercase">Current Status</p>
                   <p className="text-lg font-black text-blue-900 mt-1">{currentJob}</p>
-                  <p className="text-xs text-blue-700 mt-0.5">Haftalık Gelir: {jobIncome.toLocaleString()} ₺</p>
+                  <p className="text-xs text-blue-700 mt-0.5">Weekly Income: {jobIncome.toLocaleString()} ₺</p>
                </div>
 
-               <p className="text-xs font-bold text-slate-500 mt-2">Açık Pozisyonlar</p>
+               <p className="text-xs font-bold text-slate-500 mt-2">Open Positions</p>
                
                <div className="space-y-3">
                   <div className="bg-white p-3.5 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm">
                      <div>
-                       <p className="text-xs font-bold text-slate-800">Dönerci Çırağı</p>
-                       <p className="text-[10px] text-emerald-600 font-semibold">1,500 ₺ / hafta</p>
+                       <p className="text-xs font-bold text-slate-800">Döner Shop Apprentice</p>
+                       <p className="text-[10px] text-emerald-600 font-semibold">1,500 ₺ / week</p>
                      </div>
-                     <button onClick={() => applyForJob('Dönerci Çırağı', 1500)} className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">
-                       Başvur
+                     <button onClick={() => applyForJob('Döner Shop Apprentice', 1500)} className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">
+                       Apply
                      </button>
                   </div>
 
                   <div className="bg-white p-3.5 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm">
                      <div>
-                       <p className="text-xs font-bold text-slate-800">Junior Yazılımcı</p>
-                       <p className="text-[10px] text-emerald-600 font-semibold">12,500 ₺ / hafta</p>
+                       <p className="text-xs font-bold text-slate-800">Junior Developer</p>
+                       <p className="text-[10px] text-emerald-600 font-semibold">12,500 ₺ / week</p>
                      </div>
-                     <button onClick={() => applyForJob('Junior Yazılımcı', 12500)} className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">
-                       Başvur
+                     <button onClick={() => applyForJob('Junior Developer', 12500)} className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">
+                       Apply
                      </button>
                   </div>
 
                   <div className="bg-white p-3.5 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm">
                      <div>
-                       <p className="text-xs font-bold text-slate-800">Holding Yönetici Adayı</p>
-                       <p className="text-[10px] text-emerald-600 font-semibold">75,000 ₺ / hafta</p>
+                       <p className="text-xs font-bold text-slate-800">Holding Executive Trainee</p>
+                       <p className="text-[10px] text-emerald-600 font-semibold">75,000 ₺ / week</p>
                      </div>
-                     <button onClick={() => applyForJob('Holding Yönetici Adayı', 75000)} className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">
-                       Başvur
+                     <button onClick={() => applyForJob('Holding Executive Trainee', 75000)} className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">
+                       Apply
                      </button>
                   </div>
                </div>
@@ -283,50 +280,50 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
         )}
 
         {/* ======================= */}
-        {/* APP 4: BORSA & CRYPTO   */}
+        {/* APP 4: STOCKS & CRYPTO  */}
         {/* ======================= */}
         {activeApp === 'borsa' && (
           <div className="flex-1 bg-white w-full h-full flex flex-col relative pt-12">
             <div className="bg-emerald-600 px-5 py-4 flex justify-between items-center shadow-md z-10">
                <button onClick={() => setActiveApp('home')} className="text-white text-2xl font-light">‹</button>
-               <h1 className="text-white font-bold text-sm tracking-widest">BİST & KRİPTO</h1>
+               <h1 className="text-white font-bold text-sm tracking-widest">BIST & CRYPTO</h1>
                <div className="w-6"></div>
             </div>
             
             <div className="p-5 flex-1 bg-slate-50 flex flex-col gap-4 overflow-y-auto">
                <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
-                  <p className="text-[10px] font-bold text-emerald-600 uppercase">Hızlı Yatırım</p>
-                  <p className="text-xs text-emerald-800 mt-1">Paranı ikiye katla ya da sıfırla!</p>
+                  <p className="text-[10px] font-bold text-emerald-600 uppercase">Quick Trading</p>
+                  <p className="text-xs text-emerald-800 mt-1">Double your money or lose it all!</p>
                </div>
 
                <div className="space-y-3">
                   <div className="bg-white p-3.5 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm">
                      <div>
-                       <p className="text-xs font-bold text-slate-800">🇹🇷 Türk Hava Yolları (THYAO)</p>
-                       <p className="text-[10px] text-slate-500">Maliyet: 100,000 ₺ (2x Kazan)</p>
+                       <p className="text-xs font-bold text-slate-800">✈️ Turkish Airlines (THYAO)</p>
+                       <p className="text-[10px] text-slate-500">Cost: 100,000 ₺ (2x Return)</p>
                      </div>
                      <button onClick={() => tradeAsset(100000, 2, 'THYAO')} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">
-                       Yatır
+                       Invest
                      </button>
                   </div>
 
                   <div className="bg-white p-3.5 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm">
                      <div>
-                       <p className="text-xs font-bold text-slate-800">⚡ Halka Arz Macerası</p>
-                       <p className="text-[10px] text-slate-500">Maliyet: 500,000 ₺ (3x Kazan)</p>
+                       <p className="text-xs font-bold text-slate-800">⚡ IPO Adventure</p>
+                       <p className="text-[10px] text-slate-500">Cost: 500,000 ₺ (3x Return)</p>
                      </div>
-                     <button onClick={() => tradeAsset(500000, 3, 'Halka Arz')} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">
-                       Yatır
+                     <button onClick={() => tradeAsset(500000, 3, 'IPO')} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">
+                       Invest
                      </button>
                   </div>
 
                   <div className="bg-white p-3.5 rounded-2xl border border-slate-200 flex justify-between items-center shadow-sm">
                      <div>
-                       <p className="text-xs font-bold text-slate-800">🚀 Meme Coin Spekülasyonu</p>
-                       <p className="text-[10px] text-slate-500">Maliyet: 1,000,000 ₺ (5x Kazan)</p>
+                       <p className="text-xs font-bold text-slate-800">🚀 Meme Coin Speculation</p>
+                       <p className="text-[10px] text-slate-500">Cost: 1,000,000 ₺ (5x Return)</p>
                      </div>
                      <button onClick={() => tradeAsset(1000000, 5, 'Meme Coin')} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">
-                       Yatır
+                       Invest
                      </button>
                   </div>
                </div>
@@ -349,7 +346,7 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2 custom-scrollbar pb-4">
-              <p className="text-center text-slate-500 text-[10px] font-medium mb-3 uppercase tracking-widest mt-2">Bugün 10:49</p>
+              <p className="text-center text-slate-500 text-[10px] font-medium mb-3 uppercase tracking-widest mt-2">Today 10:49</p>
               
               {messages.map((msg, index) => {
                 const isMe = msg.sender === 'me';
@@ -374,8 +371,8 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
                      <div className="flex items-center gap-3">
                         <div className="bg-red-600 rounded-full w-8 h-8 flex items-center justify-center text-white font-black text-lg font-serif border border-red-500 shadow-inner">Z</div>
                         <div className="flex-1">
-                          <p className="text-white font-semibold text-[12px] leading-tight">Ziraat Mobil</p>
-                          <p className="text-emerald-400 font-medium text-[10px]">Transfer Başarılı ✔</p>
+                          <p className="text-white font-semibold text-[12px] leading-tight">Ziraat Mobile</p>
+                          <p className="text-emerald-400 font-medium text-[10px]">Transfer Successful ✔</p>
                         </div>
                      </div>
                      <div className="bg-black/50 rounded-lg p-2 text-center border border-slate-800 mt-1">
@@ -401,13 +398,13 @@ export default function ChatModal({ onClose, updateWallet, updateEnergy, playerD
               {!interactionDone ? (
                 <div className="flex flex-col gap-2">
                   <button onClick={() => handleAction("friendly")} className="w-full bg-slate-800 hover:bg-slate-700 text-blue-400 rounded-xl py-3 text-[14px] font-semibold transition-colors">
-                    Merhaba De (+Social)
+                    Say Hello (+Social)
                   </button>
                   <button onClick={() => handleAction("bill")} className="w-full bg-slate-800 hover:bg-slate-700 text-amber-500 rounded-xl py-3 text-[14px] font-semibold transition-colors">
-                    Para İste
+                    Ask for Money
                   </button>
                   <button onClick={() => handleAction("scam")} className="w-full bg-rose-950/30 hover:bg-rose-900/40 text-rose-500 border border-rose-900/50 rounded-xl py-3 text-[14px] font-semibold transition-colors">
-                    Ağır Dolandırıcılık
+                    Insider Trading Scam
                   </button>
                 </div>
               ) : (
